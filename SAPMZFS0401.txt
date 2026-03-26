@@ -1,0 +1,16 @@
+*&---------------------------------------------------------------------*
+*& Module Pool      SAPMZFS0401
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+INCLUDE sapmzfs0401_top                         .    " Global Data
+
+INCLUDE sapmzfs0401_c01                         .  " CLASS
+INCLUDE sapmzfs0401_o01                         .  " PBO-Modules
+INCLUDE sapmzfs0401_i01                         .  " PAI-Modules
+INCLUDE sapmzfs0401_v01                         .  " POV-Modules
+INCLUDE sapmzfs0401_f01                         .  " FORM-Routines
+
+LOAD-OF-PROGRAM .
+  " 시작 시 값 초기화
+  PERFORM set_init .

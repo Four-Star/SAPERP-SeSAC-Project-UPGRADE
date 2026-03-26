@@ -1,0 +1,2678 @@
+*&---------------------------------------------------------------------*
+*& Include          SAPMZFS0401_F01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*& Form CLEAR_OBJECT
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM clear_object  CHANGING po_con TYPE REF TO cl_gui_custom_container
+                            po_alv TYPE REF TO cl_gui_alv_grid .
+  IF po_alv IS NOT INITIAL .
+    po_alv->free( ) .
+    CLEAR po_alv .
+  ENDIF.
+
+  IF po_con IS NOT INITIAL .
+    po_con->free( ) .
+    CLEAR po_con .
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form CREATE_OBJECT
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM create_object  USING    VALUE(p_con)
+                    CHANGING po_con TYPE REF TO cl_gui_custom_container
+                             po_alv TYPE REF TO cl_gui_alv_grid .
+
+  " ### #### ## ##
+  CREATE OBJECT po_con
+    EXPORTING
+*     parent                      =
+      container_name              = p_con
+*     style                       =
+*     lifetime                    = lifetime_default
+*     repid                       =
+*     dynnr                       =
+*     no_autodef_progid_dynnr     =
+    EXCEPTIONS
+      cntl_error                  = 1
+      cntl_system_error           = 2
+      create_error                = 3
+      lifetime_error              = 4
+      lifetime_dynpro_dynpro_link = 5
+      OTHERS                      = 6.
+  IF sy-subrc <> 0.
+    MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+               WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+  ENDIF.
+
+  " ALV GIRD ## ##
+  CREATE OBJECT po_alv
+    EXPORTING
+*     i_shellstyle      = 0
+*     i_lifetime        =
+      i_parent          = po_con
+*     i_appl_events     = space
+*     i_parentdbg       =
+*     i_applogparent    =
+*     i_graphicsparent  =
+*     i_name            =
+*     i_fcat_complete   = SPACE
+    EXCEPTIONS
+      error_cntl_create = 1
+      error_cntl_init   = 2
+      error_cntl_link   = 3
+      error_dp_create   = 4
+      OTHERS            = 5.
+  IF sy-subrc <> 0.
+    MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+               WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+  ENDIF.
+
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form SET_LAYO_0100
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM set_layo_0100  CHANGING ps_layo TYPE lvc_s_layo.
+  CLEAR : ps_layo .
+
+  ps_layo-zebra = 'X'.
+  ps_layo-cwidth_opt = 'X'.
+  ps_layo-sel_mode = 'A'.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form SET_SORT_0100
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM set_sort_0100  CHANGING pt_sort TYPE lvc_t_sort .
+  DATA : ls_sort LIKE LINE OF pt_sort .
+
+  CLEAR : ls_sort .
+  ls_sort-spos = 1.
+  ls_sort-fieldname = 'BLDAT'.
+  ls_sort-down = 'X' .
+  APPEND ls_sort TO pt_sort .
+
+  CLEAR : ls_sort .
+  ls_sort-spos = 2.
+  ls_sort-fieldname = 'BUDAT'.
+  ls_sort-down = 'X' .
+  APPEND ls_sort TO pt_sort .
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form SET_FCAT_0100
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM set_fcat_0100  CHANGING pt_fcat TYPE lvc_t_fcat .
+  DATA : ls_fcat LIKE LINE OF pt_fcat .
+
+  CLEAR : pt_fcat .
+
+  " 1. ## ##
+  PERFORM append_fcat : USING 'FIELDNAME' 'BELNR' ''
+                        CHANGING ls_fcat pt_fcat ,
+                        USING 'HOTSPOT' 'X' ''
+                        CHANGING ls_fcat pt_fcat ,
+                        USING 'COL_POS' '1' 'X'
+                        CHANGING ls_fcat pt_fcat .
+
+  " 2. ## ##
+  PERFORM append_fcat : USING 'FIELDNAME' 'FYEAR' ''
+                        CHANGING ls_fcat pt_fcat ,
+                        USING 'COL_POS' '2' 'X'
+                        CHANGING ls_fcat pt_fcat .
+
+
+  " 2. ###
+  PERFORM append_fcat : USING 'FIELDNAME' 'BUDAT' ''
+                        CHANGING ls_fcat pt_fcat ,
+                        USING 'COL_POS' '3' 'X'
+                        CHANGING ls_fcat pt_fcat .
+
+  " 3. ###
+  PERFORM append_fcat : USING 'FIELDNAME' 'BLDAT' ''
+                        CHANGING ls_fcat pt_fcat ,
+                        USING 'COL_POS' '4' 'X'
+                        CHANGING ls_fcat pt_fcat .
+
+  " 4. ####
+*  PERFORM append_fcat : USING 'FIELDNAME' 'BTTXT' ''
+*                        CHANGING ls_fcat pt_fcat ,
+*                        USING 'COL_POS' '4' 'X'
+*                        CHANGING ls_fcat pt_fcat .
+
+*  " 5. ####
+  PERFORM append_fcat : USING 'FIELDNAME' 'BTTXT' ''
+                        CHANGING ls_fcat pt_fcat ,
+                        USING 'COL_POS' '5' ''
+                        CHANGING ls_fcat pt_fcat ,
+                        USING 'COLTEXT' '####' 'X'
+                        CHANGING ls_fcat pt_fcat .
+
+  " 6. ####
+  PERFORM append_fcat : USING 'FIELDNAME' 'DONUM' ''
+                        CHANGING ls_fcat pt_fcat ,
+                        USING 'COL_POS' '6' 'X'
+                        CHANGING ls_fcat pt_fcat .
+
+  " NO_OUT
+  " 9. BTYPE
+  PERFORM append_fcat : USING 'FIELDNAME' 'BTYPE' ''
+                        CHANGING ls_fcat pt_fcat ,
+                        USING 'NO_OUT' 'X' 'X'
+                        CHANGING ls_fcat pt_fcat .
+
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form SET_HANDLER
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM set_handler  USING    po_alv TYPE REF TO cl_gui_alv_grid
+                  CHANGING po_handler TYPE REF TO lcl_handler .
+  IF po_handler IS NOT BOUND .
+    CREATE OBJECT po_handler .
+  ENDIF.
+
+  SET HANDLER po_handler->on_double_click FOR po_alv .
+  SET HANDLER po_handler->on_hotspot_click FOR po_alv .
+  SET HANDLER po_handler->on_data_changed FOR po_alv .
+  SET HANDLER po_handler->on_data_changed_finished FOR po_alv .
+
+  " ## ### ### # ##!
+  CALL METHOD po_alv->register_edit_event
+    EXPORTING
+      i_event_id = cl_gui_alv_grid=>mc_evt_modified.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form DISPLAY_ALV_0100
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM display_alv_0100  USING    VALUE(po_alv) TYPE REF TO cl_gui_alv_grid
+                                VALUE(ps_layo) TYPE lvc_s_layo
+                                VALUE(pt_sort) TYPE lvc_t_sort
+                                VALUE(pt_fcat) TYPE lvc_t_fcat
+                                VALUE(p_sname)
+                       CHANGING pt_data LIKE gt_data .
+
+  CALL METHOD po_alv->set_table_for_first_display
+    EXPORTING
+*     i_buffer_active               =
+*     i_bypassing_buffer            =
+*     i_consistency_check           =
+      i_structure_name              = p_sname
+*     is_variant                    =
+*     i_save                        =
+*     i_default                     = 'X'
+      is_layout                     = ps_layo
+*     is_print                      =
+*     it_special_groups             =
+*     it_toolbar_excluding          =
+*     it_hyperlink                  =
+*     it_alv_graphics               =
+*     it_except_qinfo               =
+*     ir_salv_adapter               =
+    CHANGING
+      it_outtab                     = pt_data
+      it_fieldcatalog               = pt_fcat
+      it_sort                       = pt_sort
+*     it_filter                     =
+    EXCEPTIONS
+      invalid_parameter_combination = 1
+      program_error                 = 2
+      too_many_lines                = 3
+      OTHERS                        = 4.
+  IF sy-subrc <> 0.
+*   Implement suitable error handling here
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form SET_LAYO_0200
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM set_layo_0200  CHANGING ps_layo TYPE lvc_s_layo .
+  CLEAR : ps_layo .
+
+  ps_layo-zebra = 'X'.
+  ps_layo-cwidth_opt = 'X' .
+  ps_layo-sel_mode = 'A' .
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form SET_SORT_0200
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM set_sort_0200  CHANGING pt_sort TYPE lvc_t_sort .
+  DATA : ls_sort LIKE LINE OF pt_sort .
+
+  " ####
+  CLEAR : ls_sort , pt_sort .
+  ls_sort-fieldname = 'BELNR'.
+  ls_sort-spos = 1.
+  ls_sort-up = 'X' .
+  APPEND ls_sort TO pt_sort .
+
+  " ####
+  CLEAR : ls_sort .
+  ls_sort-spos = 2.
+  ls_sort-fieldname = 'SEQNO'.
+  ls_sort-up = 'X' .
+  APPEND ls_sort TO pt_sort .
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form SET_FCAT_0200
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM set_fcat_0200  CHANGING pt_fcat TYPE lvc_t_fcat .
+  DATA : ls_fcat LIKE LINE OF pt_fcat .
+
+  CLEAR : pt_fcat .
+
+  " 1. ## ##
+  PERFORM append_fcat : USING 'FIELDNAME' 'BELNR' ''
+                        CHANGING ls_fcat pt_fcat ,
+                        USING 'NO_OUT' 'X' 'X'
+                        CHANGING ls_fcat pt_fcat .
+
+  " 2. ####
+  PERFORM append_fcat : USING 'FIELDNAME' 'FYEAR' ''
+                        CHANGING ls_fcat pt_fcat ,
+                        USING 'COL_POS' '2' 'X'
+                        CHANGING ls_fcat pt_fcat .
+
+  " 3. ####
+  PERFORM append_fcat : USING 'FIELDNAME' 'SEQNO' ''
+                        CHANGING ls_fcat pt_fcat ,
+                        USING 'COL_POS' '3' 'X'
+                        CHANGING ls_fcat pt_fcat .
+
+  " 4. ###
+  PERFORM append_fcat : USING 'FIELDNAME' 'BSCHL' ''
+                        CHANGING ls_fcat pt_fcat ,
+                        USING 'COL_POS' '4' 'X'
+                        CHANGING ls_fcat pt_fcat .
+
+  " 5. ## ##
+  PERFORM append_fcat : USING 'FIELDNAME' 'GACNT' ''
+                        CHANGING ls_fcat pt_fcat ,
+                        USING 'COL_POS' '5' 'X'
+                        CHANGING ls_fcat pt_fcat .
+
+  " 6. ## ##
+  PERFORM append_fcat : USING 'FIELDNAME' 'BDSCP' ''
+                        CHANGING ls_fcat pt_fcat ,
+                        USING 'COL_POS' '6' 'X'
+                        CHANGING ls_fcat pt_fcat .
+
+  " 7. ## ##
+  PERFORM append_fcat : USING 'FIELDNAME' 'DMBTR_D' ''
+                        CHANGING ls_fcat pt_fcat ,
+                        USING 'COL_POS' '7' 'X'
+                        CHANGING ls_fcat pt_fcat .
+
+  " 8. ## ##
+  PERFORM append_fcat : USING 'FIELDNAME' 'DMBTR_C' ''
+                        CHANGING ls_fcat pt_fcat ,
+                        USING 'COL_POS' '8' 'X'
+                        CHANGING ls_fcat pt_fcat .
+
+  " 9. ##
+  PERFORM append_fcat : USING 'FIELDNAME' 'WAERS' ''
+                        CHANGING ls_fcat pt_fcat ,
+                        USING 'COL_POS' '9' 'X'
+                        CHANGING ls_fcat pt_fcat .
+
+  " 10. ### ##
+  PERFORM append_fcat : USING 'FIELDNAME' 'PATNR' ''
+                        CHANGING ls_fcat pt_fcat ,
+                        USING 'COL_POS' '10' 'X'
+                        CHANGING ls_fcat pt_fcat .
+
+  " 11. ### ##
+  PERFORM append_fcat : USING 'FIELDNAME' 'PNAME' ''
+                        CHANGING ls_fcat pt_fcat ,
+                        USING 'COL_POS' '11' 'X'
+                        CHANGING ls_fcat pt_fcat .
+
+  " NO_OUT ##
+  " 12. ## ##
+  PERFORM append_fcat : USING 'FIELDNAME' 'GTYPE' ''
+                        CHANGING ls_fcat pt_fcat ,
+                        USING 'NO_OUT' 'X' 'X'
+                        CHANGING ls_fcat pt_fcat .
+
+  " 13 . BP ##
+  PERFORM append_fcat : USING 'FIELDNAME' 'BPTYP' ''
+                        CHANGING ls_fcat pt_fcat ,
+                        USING 'NO_OUT' 'X' 'X'
+                        CHANGING ls_fcat pt_fcat .
+
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form DISPLAY_ALV_0200
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM display_alv_0200  USING    VALUE(po_alv) TYPE REF TO cl_gui_alv_grid
+                                VALUE(ps_layo) TYPE lvc_s_layo
+                                VALUE(pt_sort) TYPE lvc_t_sort
+                                VALUE(pt_fcat) TYPE lvc_t_fcat
+                                VALUE(p_sname)
+                       CHANGING pt_data LIKE gt_line_alv .
+  CALL METHOD po_alv->set_table_for_first_display
+    EXPORTING
+      i_structure_name              = p_sname
+      is_layout                     = ps_layo
+    CHANGING
+      it_outtab                     = pt_data
+      it_fieldcatalog               = pt_fcat
+      it_sort                       = pt_sort
+    EXCEPTIONS
+      invalid_parameter_combination = 1
+      program_error                 = 2
+      too_many_lines                = 3
+      OTHERS                        = 4.
+  IF sy-subrc <> 0.
+*   Implement suitable error handling here
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form SET_INIT
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM set_init .
+  " screen 100 ## ###
+  PERFORM set_condition_0100 .
+
+  " ### ##
+  PERFORM get_domain_value .
+
+  " ## ## ##
+  PERFORM get_gacnt_info CHANGING gt_gacnt gv_subrc .
+
+  " ### ## ##
+  PERFORM get_bschl_info CHANGING gt_bschl gv_subrc .
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form SET_CONDITION_0100
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM set_condition_0100 .
+  " ##
+  PERFORM set_month USING sy-datum '-6'
+                    CHANGING zsfs0401-blbdt .
+
+  PERFORM set_month USING sy-datum '0'
+                    CHANGING zsfs0401-bledt .
+
+  PERFORM set_month USING sy-datum '-6'
+                    CHANGING zsfs0401-blbdt .
+
+  PERFORM set_month USING sy-datum '1'
+                    CHANGING zsfs0401-bledt .
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form GET_DOMAIN_VALUE
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM get_domain_value .
+  " 1. ####
+  PERFORM call_get_domain USING 'ZDFS_BTYPE'
+                          CHANGING gt_domain .
+
+  " 2. bp ##
+  PERFORM call_get_domain USING 'ZDFS_BPTYP'
+                          CHANGING gt_domain .
+
+  " 3. ## ##
+  PERFORM call_get_domain USING 'ZDFS_GTYPE'
+                          CHANGING gt_domain .
+
+  " 4. ### ##
+  PERFORM call_get_domain USING 'ZDFS_BSTAT'
+                          CHANGING gt_domain .
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form GET_GACNT_INFO
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      <-- GT_GACNT
+*&      <-- GV_SUBRC
+*&---------------------------------------------------------------------*
+FORM get_gacnt_info  CHANGING pt_gacnt LIKE gt_gacnt
+                              p_subrc TYPE sy-subrc .
+
+  CLEAR : pt_gacnt .
+
+  SELECT gacnt
+         mitkz
+         bdscp
+    FROM ztfs0404
+    INTO CORRESPONDING FIELDS OF TABLE pt_gacnt .
+
+  IF sy-subrc <> 0.
+    p_subrc = 4 .
+    RETURN .
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form SET_MONTH
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM set_month  USING    VALUE(p_datum)
+                         VALUE(p_mon)
+                CHANGING p_bldat TYPE d .
+  " # ## function
+  CALL FUNCTION 'CNV_MBT_ODA_ADD_MONTH_TO_DATE'
+    EXPORTING
+      months  = p_mon
+      olddate = p_datum
+    IMPORTING
+      newdate = p_bldat.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form CALL_GET_DOMAIN
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      --> P_
+*&      <-- GT_DOMAIN
+*&---------------------------------------------------------------------*
+FORM call_get_domain  USING    VALUE(p_domain)
+                      CHANGING pt_domain LIKE gt_domain .
+  DATA : lt_domain LIKE pt_domain .
+
+  " ### GET ## ##
+  CALL FUNCTION 'DD_DOMVALUES_GET'
+    EXPORTING
+      domname   = p_domain
+      text      = 'X'
+*     LANGU     = ' '
+*     BYPASS_BUFFER        = ' '
+*   IMPORTING
+*     RC        =
+    TABLES
+      dd07v_tab = lt_domain
+*   EXCEPTIONS
+*     WRONG_TEXTFLAG       = 1
+*     OTHERS    = 2
+    .
+  IF sy-subrc <> 0.
+* Implement suitable error handling here
+  ENDIF.
+
+  " ##### ##
+  APPEND LINES OF lt_domain TO pt_domain .
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form APPEND_FCAT
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM append_fcat  USING    VALUE(p_field)
+                           VALUE(p_value)
+                           VALUE(p_endf)
+                  CHANGING ps_fcat TYPE lvc_s_fcat
+                           pt_fcat TYPE lvc_t_fcat .
+
+  CASE p_field .
+    WHEN 'FIELDNAME' .
+      ps_fcat-fieldname = p_value .
+    WHEN 'COL_POS'.
+      ps_fcat-col_pos = p_value .
+    WHEN 'COLTEXT'.
+      ps_fcat-coltext = p_value .
+    WHEN 'NO_OUT'.
+      ps_fcat-no_out = p_value .
+    WHEN 'HOTSPOT'.
+      ps_fcat-hotspot = p_value .
+    WHEN 'COLTEXT' .
+      ps_fcat-coltext = p_value .
+    WHEN OTHERS.
+  ENDCASE.
+
+  IF p_endf = 'X' .
+    APPEND ps_fcat TO pt_fcat .
+    CLEAR : ps_fcat .
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form INPUT_CHECK_0100
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM input_check_0100  CHANGING p_subrc TYPE sy-subrc .
+  " 1. ### ### #,
+  PERFORM check_init USING zsfs0401
+                     CHANGING p_subrc .
+
+  " 2. ##### ### # ##
+  PERFORM check_begin_end_initial USING zsfs0401-bubdt zsfs0401-buedt
+                                  CHANGING p_subrc .
+  PERFORM check_begin_end_initial USING zsfs0401-blbdt zsfs0401-bledt
+                                  CHANGING p_subrc .
+
+  " 3. ### ### ### ## ####
+  PERFORM check_reverse_data USING zsfs0401-bubdt zsfs0401-buedt
+                             CHANGING p_subrc .
+
+  " 4. ### ### ### ## ## ##
+  PERFORM check_reverse_data USING zsfs0401-blbdt zsfs0401-bledt
+                             CHANGING p_subrc .
+
+  " 5. ### ### ### ### ## ## ## (3#)
+  PERFORM check_range_date USING zsfs0401-bubdt zsfs0401-buedt
+                           CHANGING p_subrc .
+  PERFORM check_range_date USING zsfs0401-bubdt zsfs0401-buedt
+                           CHANGING p_subrc .
+
+  " 6. ### >= ##### ## -> warning message
+  PERFORM check_compare_data USING zsfs0401-bubdt zsfs0401-buedt
+                                   zsfs0401-blbdt zsfs0401-bledt
+                             CHANGING p_subrc .
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form CHECK_INIT
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM check_init  USING    VALUE(ps_cond) TYPE zsfs0401
+                 CHANGING p_subrc        TYPE sy-subrc .
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  IF ps_cond IS INITIAL .
+    MESSAGE s001(zmsg_fs) .
+    p_subrc = 4.
+    RETURN .
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form CHECK_BEGIN_END_INITIAL
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM check_begin_end_initial  USING    VALUE(p_bubdt) TYPE dats
+                                       VALUE(p_buedt) TYPE dats
+                              CHANGING p_subrc TYPE sy-subrc .
+
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  IF p_bubdt IS INITIAL AND p_buedt IS NOT INITIAL .
+    MESSAGE s002(zmsg_fs) .
+    p_subrc = 4.
+    RETURN .
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form CHECK_REVERSE_DATA
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM check_reverse_data  USING    VALUE(p_bubdt) TYPE dats
+                                       VALUE(p_buedt) TYPE dats
+                         CHANGING p_subrc TYPE sy-subrc .
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  IF p_bubdt > p_buedt .
+    IF sy-binpt IS NOT INITIAL .
+      MESSAGE s003(zmsg_fs) .
+    ENDIF.
+
+    p_subrc = 4 .
+    RETURN .
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form CHECK_RANGE_DATE
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM check_range_date  USING VALUE(p_bdate) TYPE dats
+                                VALUE(p_edate) TYPE dats
+                       CHANGING p_subrc TYPE sy-subrc .
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  IF p_edate - p_bdate > 1000 .
+    MESSAGE s004(zmsg_fs) .
+    p_subrc = 4.
+    RETURN .
+
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form CHECK_COMPARE_DATA
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM check_compare_data  USING VALUE(p_bubdt) TYPE dats
+                                  VALUE(p_buedt) TYPE dats
+                                  VALUE(p_blbdt) TYPE dats
+                                  VALUE(p_bledt) TYPE dats
+                         CHANGING p_subrc TYPE sy-subrc .
+
+  IF p_subrc <> 0 . RETURN . ENDIF .
+
+  IF ( p_bubdt IS INITIAL AND p_buedt IS INITIAL ) OR
+     ( p_blbdt IS INITIAL AND p_bledt IS INITIAL ) .
+    RETURN .
+  ENDIF.
+
+  IF ( p_buedt IS INITIAL AND p_bubdt < p_blbdt ) OR p_buedt < p_blbdt.
+    MESSAGE s005(zmsg_fs) .
+    p_subrc = 4.
+    RETURN .
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form GET_ALV_DATA_0100
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM get_alv_data_0100  USING VALUE(p_belnr)
+                                VALUE(p_blbdt) VALUE(p_bledt)
+                                VALUE(p_bubdt) VALUE(p_buedt)
+                                VALUE(p_btype)
+                                VALUE(p_donum)
+                          CHANGING pt_data LIKE gt_data.
+  " 1. ## range table ###
+  PERFORM get_range_table USING p_belnr ''
+                          CHANGING gr_belnr .
+  PERFORM get_range_table USING p_blbdt p_bledt
+                          CHANGING gr_bldat .
+  PERFORM get_range_table USING p_bubdt p_buedt
+                          CHANGING gr_budat .
+  PERFORM get_range_table USING p_btype ''
+                          CHANGING gr_btype .
+  PERFORM get_range_table USING p_donum ''
+                          CHANGING gr_donum .
+
+  " 2. #### ### select
+  PERFORM get_data_from_condition USING gr_belnr gr_bldat gr_budat gr_btype gr_donum
+                                  CHANGING pt_data gv_subrc .
+
+  " 3. domain # ####
+  PERFORM get_data_detail USING gt_domain
+                          CHANGING pt_data gv_subrc .
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form GET_RANGE_TABLE
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM get_range_table  USING    VALUE(p_low)
+                               VALUE(p_high)
+                      CHANGING pr_range TYPE rsdsselopt_t.
+
+  CLEAR : pr_range .
+
+  IF p_low IS INITIAL . RETURN . ENDIF .
+
+  DATA : ls_range LIKE LINE OF pr_range .
+
+  ls_range-sign = 'I'.
+  ls_range-low = p_low .
+  ls_range-option = 'EQ' .
+  IF p_high IS NOT INITIAL .
+    ls_range-high = p_high .
+    ls_range-option = 'BT' .
+  ENDIF.
+
+  APPEND ls_range TO pr_range .
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form GET_DATA_FROM_CONDITION
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM get_data_from_condition  USING VALUE(pr_belnr) TYPE rsdsselopt_t
+                                       VALUE(pr_bldat) TYPE rsdsselopt_t
+                                       VALUE(pr_budat) TYPE rsdsselopt_t
+                                       VALUE(pr_btype) TYPE rsdsselopt_t
+                                       VALUE(pr_donum) TYPE rsdsselopt_t
+                              CHANGING pt_data LIKE gt_data
+                                       p_subrc TYPE sy-subrc .
+
+  SELECT *
+    FROM ztfs0401
+    INTO CORRESPONDING FIELDS OF TABLE pt_data
+   WHERE belnr IN pr_belnr
+     AND bldat IN pr_bldat
+     AND budat IN pr_budat
+     AND btype IN pr_btype
+     AND donum IN pr_donum .
+
+  IF sy-subrc <> 0.
+    p_subrc = 2 .
+    RETURN .
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form GET_DATA_DETAIL
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM get_data_detail  USING VALUE(pt_domain) LIKE gt_domain
+                     CHANGING pt_data       LIKE gt_data
+                              p_subrc       TYPE sy-subrc .
+
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  DATA : ls_data LIKE LINE OF pt_data .
+
+  LOOP AT pt_data INTO ls_data .
+    PERFORM read_domain_data USING pt_domain 'ZDFS_BTYPE' ls_data-btype sy-langu
+                             CHANGING ls_data-bttxt .
+
+    " ##
+    MODIFY pt_data FROM ls_data .
+    CLEAR : ls_data .
+  ENDLOOP.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form READ_DOMAIN_DATA
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM read_domain_data  USING VALUE(pt_domain) LIKE gt_domain
+                                VALUE(p_dname)
+                                VALUE(p_value)
+                                VALUE(p_langu)
+                       CHANGING p_text.
+
+  CLEAR : p_text .
+  IF p_value IS INITIAL . RETURN . ENDIF.
+
+  DATA : ls_domain LIKE LINE OF pt_domain .
+  READ TABLE pt_domain INTO ls_domain WITH KEY domname = p_dname
+                                               domvalue_l = p_value
+                                               ddlanguage = p_langu .
+
+  IF sy-subrc <> 0.
+    MESSAGE s006(zmsg_fs) .
+  ENDIF.
+
+  p_text = ls_domain-ddtext .
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form CLEAR_SCREEN_200
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM clear_screen_200 CHANGING p_subrc TYPE sy-subrc .
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  CLEAR : zsfs0403 , gv_step , zsfs0404 , zsfs0405 , gt_line , gs_line , gt_line_alv , gs_line_alv .
+  zsfs0403-fyear = sy-datum(4) .
+  zsfs0403-bldat = sy-datum .
+  zsfs0403-budat = sy-datum .
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form CLEAR_SCREEN_300
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM clear_screen_300 CHANGING p_subrc TYPE sy-subrc .
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  CLEAR : zsfs0403 .
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form GET_SELECTED_ROW_NO
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM get_selected_row_no  USING    po_alv  TYPE REF TO cl_gui_alv_grid
+                          CHANGING p_index TYPE i
+                                   p_subrc TYPE sy-subrc .
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  DATA : lt_roid TYPE lvc_t_roid,
+         ls_roid LIKE LINE OF lt_roid.
+  DATA : lv_cnt TYPE i .
+
+  CALL METHOD po_alv->get_selected_rows
+    IMPORTING
+*     et_index_rows =
+      et_row_no = lt_roid.
+
+  lv_cnt = lines( lt_roid ) .
+
+  IF lv_cnt <> 1 .
+    IF sy-binpt IS INITIAL .
+      MESSAGE e010(zmsg_fs) WITH lv_cnt .
+    ENDIF.
+
+    p_subrc = 2 .
+    RETURN .
+  ENDIF.
+
+  READ TABLE lt_roid INTO ls_roid INDEX 1 .
+
+  p_index = ls_roid-row_id .
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form GET_ROW_DATA
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM get_row_data  USING    VALUE(p_index)
+                   CHANGING pt_data      LIKE gt_data
+                            ps_header    LIKE gs_header
+                            pt_line      LIKE gt_line
+                            pt_line_alv  LIKE gt_line_alv
+                            p_subrc      TYPE sy-subrc .
+
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  DATA : ls_data     LIKE LINE OF pt_data,
+         ls_line     LIKE LINE OF pt_line,
+         ls_line_alv LIKE LINE OF pt_line_alv.
+
+  CLEAR : pt_line, pt_line_alv , ps_header .
+
+  " pt_data ## ##
+  READ TABLE pt_data INTO ls_data INDEX p_index .
+
+  IF sy-subrc <> 0 .
+    p_subrc = 4 .
+    RETURN .
+  ENDIF.
+
+  " ###
+  MOVE-CORRESPONDING ls_data TO ps_header .
+
+  " HEADER DATA .
+  MOVE-CORRESPONDING ps_header TO zsfs0403 .
+
+  " select
+  SELECT belnr  " ####
+         fyear  " ####
+         seqno  " ####
+         bschl  " ###
+         a~gacnt  " ##
+         dmbtr  " ##
+         waers  " ##
+         a~patnr  " #####
+         b~bptyp  " b/p ##
+         c~bdscp  " ####
+    FROM ztfs0402 AS a LEFT OUTER JOIN ztfs0310 AS b
+      ON a~patnr = b~patnr
+      LEFT OUTER JOIN ztfs0404 AS c
+      ON a~gacnt = c~gacnt
+    INTO CORRESPONDING FIELDS OF TABLE pt_line
+   WHERE belnr = ls_data-belnr
+     AND fyear = ls_data-fyear .
+
+  " ###
+  IF sy-subrc <> 0 .
+    p_subrc = 5.
+    RETURN .
+  ENDIF.
+
+  " ###
+  CLEAR : pt_line_alv , ls_line_alv .
+  LOOP AT pt_line INTO ls_line .
+    " #### ## ## ###
+
+    MOVE-CORRESPONDING ls_line TO ls_line_alv .
+
+    " #/## ### ## ###
+    PERFORM read_bschl_dc USING ls_line_alv-bschl ls_line-dmbtr
+                          CHANGING ls_line_alv-dmbtr_c ls_line_alv-dmbtr_d p_subrc .
+
+    APPEND ls_line_alv TO pt_line_alv .
+    CLEAR : ls_line_alv , ls_line .
+  ENDLOOP.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form READ_BSCHL_DC
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM read_bschl_dc  USING    VALUE(p_bschl)
+                             VALUE(p_dmbtr)
+                    CHANGING p_dmbtr_c
+                             p_dmbtr_d
+                             p_subrc TYPE sy-subrc .
+
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  DATA : ls_bschl LIKE LINE OF gt_bschl .
+
+  READ TABLE gt_bschl INTO ls_bschl WITH KEY bschl = p_bschl .
+
+  IF sy-subrc IS NOT INITIAL .
+    MESSAGE e009(zmsg_fs) .
+    RETURN .
+  ENDIF.
+
+  CASE ls_bschl-shkzg.
+    WHEN 'S'.
+      p_dmbtr_c = p_dmbtr.
+    WHEN 'H'.
+      p_dmbtr_d = p_dmbtr.
+    WHEN OTHERS.
+  ENDCASE.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form GET_BSCHL_INFO
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM get_bschl_info  CHANGING pt_bschl LIKE gt_bschl
+                              p_subrc  TYPE sy-subrc .
+
+  CLEAR : pt_bschl .
+
+  SELECT bschl
+         shkzg
+         gtype
+         text
+    FROM ztfs0403    " ### ###
+    INTO CORRESPONDING FIELDS OF TABLE pt_bschl .
+
+  IF sy-subrc <> 0.
+    p_subrc = 4 .
+    RETURN .
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form GET_HEADER_DATA
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      <-- GV_SUBRC
+*&---------------------------------------------------------------------*
+FORM get_header_data  CHANGING p_subrc TYPE sy-subrc.
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form INIT_SCREEN_0100
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM init_screen_0100 .
+  CLEAR : gt_data , gs_data .
+
+  MOVE-CORRESPONDING zsfs0403 TO gs_data .
+
+  APPEND gs_data TO gt_data .
+
+  PERFORM get_data_detail USING gt_domain
+                          CHANGING gt_data gv_subrc .
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form INIT_CLEAR
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM init_clear  CHANGING p_subrc TYPE sy-subrc .
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  CLEAR : gv_step , zsfs0403 , gs_header , gt_header , zsfs0404 , zsfs0405 , gt_line , gs_line , gt_line_alv , gs_line_alv .
+  zsfs0403-fyear = sy-datum(4) .
+  zsfs0403-budat = sy-datum .
+  zsfs0403-bldat = sy-datum .
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form CREATE_ACCOUNT
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM create_account  CHANGING p_subrc TYPE sy-subrc .
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  DATA : ls_head TYPE ztfs0401,
+         ls_line TYPE ztfs0402,
+         lt_line LIKE TABLE OF ls_line.
+
+  " ##
+  DATA : lv_belnr    TYPE char10,
+         lv_returned TYPE char10.
+
+  CALL FUNCTION 'NUMBER_GET_NEXT'
+    EXPORTING
+      nr_range_nr = '01'
+      object      = 'ZFS_BELNR'
+*     QUANTITY    = '1'
+*     SUBOBJECT   = ' '
+*     TOYEAR      = '0000'
+*     IGNORE_BUFFER                 = ' '
+    IMPORTING
+      number      = lv_belnr
+*     QUANTITY    =
+*     RETURNCODE  =
+*   EXCEPTIONS
+*     INTERVAL_NOT_FOUND            = 1
+*     NUMBER_RANGE_NOT_INTERN       = 2
+*     OBJECT_NOT_FOUND              = 3
+*     QUANTITY_IS_0                 = 4
+*     QUANTITY_IS_NOT_1             = 5
+*     INTERVAL_OVERFLOW             = 6
+*     BUFFER_OVERFLOW               = 7
+*     OTHERS      = 8
+    .
+  IF sy-subrc <> 0.
+* Implement suitable error handling here
+  ENDIF.
+
+  " LV_BELNR # ##
+  MOVE-CORRESPONDING zsfs0403 TO ls_head .
+  ls_head-belnr = lv_belnr .
+
+  CLEAR : gs_line .
+  LOOP AT gt_line INTO gs_line .
+    MOVE-CORRESPONDING gs_line TO ls_line .
+
+    ls_line-belnr = lv_belnr .
+
+    IF zsfs0403-btype = 'KZ' . " ## (##)
+      IF LS_LINE-bschl = '21' . " ##
+        LS_LINE-augbl = lv_belnr .
+      ENDIF.
+    ELSEIF zsfs0403-btype = 'DZ' . " ## (##)
+      IF LS_LINE-bschl = '11' . " ##
+        LS_LINE-augbl = lv_belnr .
+      ENDIF.
+    ENDIF.
+
+    APPEND ls_line TO lt_line .
+
+    CLEAR : gs_line , ls_line .
+  ENDLOOP.
+
+  " INSERT
+  INSERT ztfs0401 FROM ls_head.
+  IF sy-subrc <> 0.
+    MESSAGE e000(00) WITH 'HEAD ## ##'.
+    p_subrc = sy-subrc.
+    RETURN.
+  ENDIF.
+
+  INSERT ztfs0402 FROM TABLE lt_line.
+
+  IF sy-subrc <> 0.
+    MESSAGE e000(00) WITH 'LINE ## ##'.
+    p_subrc = sy-subrc.
+    RETURN.
+  ENDIF.
+
+  " KZ, DZ# ## ## ##
+  IF zsfs0403-btype = 'KZ' OR zsfs0403-btype = 'DZ' .
+    LOOP AT gt_clearing INTO gs_clearing .
+      UPDATE ztfs0402
+      SET augbl = lv_belnr          " ## ####
+      WHERE belnr = gs_clearing-belnr
+        AND seqno = gs_clearing-seqno.
+
+      IF sy-subrc <> 0.
+        MESSAGE e000(00) WITH '## #### ##'.
+        p_subrc = sy-subrc.
+        RETURN.
+      ENDIF.
+    ENDLOOP.
+
+    " ## ### ##
+
+  ENDIF.
+
+  zsfs0403-belnr = lv_belnr .
+
+  MESSAGE s012(zmsg_fs) WITH lv_belnr .
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form STEP_BY_STEP
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      <-- GV_STEP
+*&---------------------------------------------------------------------*
+FORM step_by_step  CHANGING p_step
+                            p_subrc TYPE sy-subrc .
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  CASE p_step .
+    WHEN 0 .
+      " # ##
+      " OUTPUT## ### ALV ## ##
+      " ##### ### ##
+
+      " INPUT CHECK # ####
+      " MODIFY SCREEN # PBO## ####
+      PERFORM input_check_step_0 CHANGING p_subrc .
+
+      " ## ### ##
+*      PERFORM step0_step1 .
+    WHEN 1 .
+      " ## ##
+      " INPUT CHECK #### #
+    WHEN OTHERS.
+  ENDCASE.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form INPUT_CHECK_STEP_0
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM input_check_step_0 CHANGING p_subrc TYPE sy-subrc .
+  " ## ##### ##
+  PERFORM check_clear USING zsfs0403
+                      CHANGING p_subrc .
+
+  " 1. ### ### ##
+  " ## ##
+  PERFORM check_reverse_data USING zsfs0403-bldat zsfs0403-budat
+                             CHANGING p_subrc.
+
+  " ##### ##### #####
+  DATA : ls_docutp TYPE ztfs0309 .
+  PERFORM condition_docutype USING zsfs0403-donum zsfs0403-btype
+                             CHANGING ls_docutp p_subrc .
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form CONDITION_DOCUTYPE
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM condition_docutype  USING    VALUE(p_donum)
+                                  VALUE(p_btype)
+                         CHANGING ps_docutp TYPE ztfs0309
+                                  p_subrc TYPE sy-subrc .
+  IF p_subrc <> 0 . RETURN . ENDIF .
+
+  " ###### ##### ## #,
+  IF p_btype = 'GE' AND p_donum IS INITIAL .
+    gv_step = gv_step + 1 .
+    RETURN .
+  ENDIF.
+
+  CASE p_btype.
+    WHEN 'WE'.
+      " ##
+      PERFORM get_docu_we USING p_donum
+                          CHANGING p_subrc.
+    WHEN 'KR'.
+      " ####
+*      PERFORM GET_DOCU_KR USING P_DONUM
+*                          CHANGING P_SUBRC .
+    WHEN 'KZ'. " ##
+      PERFORM get_docu_kz CHANGING p_subrc.
+    WHEN 'WL'.
+      " ##
+*      PERFORM GET_DOCU_WL USING P_DONUM
+*                          CHANGING P_SUBRC .
+    WHEN 'DR'.
+      " ####
+*      PERFORM GET_DOCU_DR USING P_DONUM
+*                          CHANGING P_SUBRC .
+    WHEN 'DZ'. " ##
+      PERFORM get_docu_dz CHANGING p_subrc.
+    WHEN OTHERS.
+  ENDCASE.
+
+  " ### LINE# LINE ALV# ##
+  PERFORM line_to_alv USING gt_line
+                      CHANGING gt_line_alv p_subrc .
+
+  gv_step = gv_step + 1 .
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form CHECK_CLEAR
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM check_clear  USING    ps_zsfs0403 TYPE zsfs0403
+                  CHANGING p_subrc TYPE sy-subrc .
+
+  IF ps_zsfs0403-fyear IS NOT INITIAL AND
+     ps_zsfs0403-bldat IS NOT INITIAL AND
+     ps_zsfs0403-budat IS NOT INITIAL AND
+     ps_zsfs0403-btype IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  MESSAGE e013(zmsg_fs) .
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form GET_DOCU_WE
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM get_docu_we  USING    VALUE(p_donum)
+                  CHANGING p_subrc.
+
+  " ##### ztfs0103
+
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  " ##### ##
+  " ### ####
+  " ##### ####
+
+  DATA : ls_ztfs0103 TYPE ztfs0103 .
+  DATA : ls_ztfs0104 TYPE ztfs0104,
+         lt_ztfs0104 LIKE TABLE OF ls_ztfs0104.
+  DATA : lv_sum TYPE i .
+
+  SELECT SINGLE *
+    FROM ztfs0103
+    INTO CORRESPONDING FIELDS OF ls_ztfs0103
+   WHERE grno = p_donum .
+
+  IF sy-subrc <> 0 .
+    " ## ##
+    p_subrc = 1 .
+    RETURN .
+  ENDIF.
+
+  zsfs0403-bldat = ls_ztfs0103-grdat .
+
+  IF ls_ztfs0103-grdat <> zsfs0403-bldat .
+    " ### ##
+    p_subrc = 2 .
+    RETURN .
+  ENDIF.
+
+  SELECT *
+    FROM ztfs0104
+    INTO CORRESPONDING FIELDS OF TABLE lt_ztfs0104
+   WHERE grno = p_donum .
+
+  IF sy-subrc <> 0 .
+    " ## ##
+    MESSAGE e014(zmsg_fs) .
+  ENDIF.
+
+  " ####
+  LOOP AT lt_ztfs0104 INTO ls_ztfs0104.
+    lv_sum = lv_sum + ls_ztfs0104-total .
+
+    CLEAR : ls_ztfs0104 .
+  ENDLOOP.
+
+  " ####
+  " ## : #### ## : GR/IR
+  PERFORM set_account_line USING lv_sum '40' '130000' '1'
+                           CHANGING gs_line .
+  APPEND gs_line TO gt_line .
+  PERFORM set_account_line USING lv_sum '50' '170000' '2'
+                           CHANGING gs_line .
+  APPEND gs_line TO gt_line .
+
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form SET_ACCOUNT_LINE
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM set_account_line  USING    VALUE(p_sum)   " ##
+                                VALUE(p_bschl) " ###
+                                VALUE(p_gacnt) " ##
+                                VALUE(p_seqno) " ####
+                       CHANGING ps_line LIKE gs_line .
+
+  CLEAR : ps_line .
+  ps_line-fyear = zsfs0403-fyear .
+  ps_line-bschl = p_bschl .
+  ps_line-dmbtr = p_sum .
+  ps_line-gacnt = p_gacnt .
+  ps_line-seqno = p_seqno .
+  ps_line-waers = 'KRW' .
+
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form LINE_TO_ALV
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM line_to_alv  USING    VALUE(pt_line) LIKE gt_line
+                  CHANGING pt_line_alv    LIKE gt_line_alv
+                           p_subrc        TYPE sy-subrc .
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  DATA : ls_line     LIKE LINE OF pt_line,
+         ls_line_alv LIKE LINE OF pt_line_alv,
+         ls_bschl    LIKE LINE OF gt_bschl.
+
+  CLEAR : pt_line_alv .
+  LOOP AT gt_line INTO ls_line .
+    MOVE-CORRESPONDING ls_line TO ls_line_alv .
+
+    READ TABLE gt_bschl INTO ls_bschl WITH KEY bschl = ls_line-bschl .
+
+    IF ls_bschl-shkzg = 'S' .
+      ls_line_alv-dmbtr_d = ls_line-dmbtr .
+    ELSEIF ls_bschl-shkzg = 'H' .
+      ls_line_alv-dmbtr_c = ls_line-dmbtr .
+    ENDIF.
+
+    " ## ##
+    READ TABLE gt_gacnt INTO gs_gacnt WITH KEY gacnt = ls_line_alv-gacnt .
+    ls_line_alv-bdscp = gs_gacnt-bdscp .
+
+    " ### ##
+    IF ls_line-bschl = '01' OR ls_line-bschl = '11' OR ls_line-bschl = '15' . " ##
+      SELECT SINGLE cname AS pname
+        FROM ztfs0308_t
+        INTO ls_line_alv-pname
+       WHERE custm = ls_line_alv-patnr
+         AND langu = sy-datum .
+
+    ELSEIF ls_line-bschl = '21' OR ls_line-bschl = '31' OR ls_line-bschl = '25' . " ##
+      SELECT SINGLE vname AS pname
+        FROM ztfs0307_t
+        INTO ls_line_alv-pname
+       WHERE vendr = ls_line_alv-patnr
+         AND langu = sy-datum .
+
+    ENDIF.
+
+    APPEND ls_line_alv TO pt_line_alv .
+    CLEAR : ls_line_alv .
+  ENDLOOP.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form INPUT_CHECK_0200
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM input_check_0200  CHANGING p_subrc TYPE sy-subrc .
+  " ##, ## # ##
+  IF gv_step IS INITIAL .
+    MESSAGE e026(zmsg_fs) .
+    p_subrc = 4 .
+    RETURN .
+  ENDIF.
+
+  PERFORM check_s_h CHANGING p_subrc .
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form CLEAR_SCREEN_0201
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      <-- P_SUBRC
+*&---------------------------------------------------------------------*
+FORM clear_screen_0201  CHANGING p_subrc TYPE sy-subrc .
+
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  CLEAR : zsfs0404 , gv_step_sub , gv_item .
+  zsfs0404-fyear = sy-datum(4) .
+  zsfs0404-seqno = gv_seqno + 1 .
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form CHECK_BSCHL
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      <-- P_SUBRC
+*&---------------------------------------------------------------------*
+FORM check_bschl  CHANGING p_tmp
+                           p_subrc TYPE sy-subrc .
+  DATA : ls_bschl LIKE LINE OF gt_bschl .
+  CLEAR : p_tmp .
+
+  READ TABLE gt_bschl INTO gs_bschl WITH KEY bschl = zsfs0404-bschl .
+
+  IF sy-subrc IS NOT INITIAL .
+    MESSAGE e015(zmsg_fs) .
+    RETURN .
+  ENDIF.
+
+  IF gs_bschl-gtype = 'D' OR gs_bschl-gtype = 'K' .
+    p_tmp = 'X' .
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form SET_STEP1_SUBSCREEN
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM set_step1_subscreen  CHANGING p_step_sub
+                                   p_subrc TYPE sy-subrc .
+  IF p_subrc IS NOT INITIAL.
+    RETURN .
+  ENDIF.
+
+  " 0->1 ## ##### ###
+  IF p_step_sub = 0 .
+    PERFORM input_202_0_to_1 CHANGING p_step_sub p_subrc .
+  ELSE .
+    RETURN .
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form INPUT_202_0_TO_1
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM input_202_0_to_1  CHANGING p_step_sub
+                                p_subrc TYPE sy-subrc .
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  IF zsfs0404-bschl IS INITIAL OR zsfs0404-gacnt IS INITIAL .
+    RETURN .
+  ENDIF.
+
+  " ### ## , ## ##
+  PERFORM check_bschl CHANGING gv_tmp p_subrc .
+
+  IF gv_tmp = 'X' . " VENDOR## CUSTOMER##
+    " ###
+    zsfs0404-patnr = zsfs0404-gacnt .
+    zsfs0405-pname = zsfs0404-bdscp .
+
+    IF gs_bschl-gtype = 'D' . " ##
+      SELECT SINGLE a~akont AS gacnt
+                    b~bdscp AS bdscp
+        INTO CORRESPONDING FIELDS OF zsfs0404
+        FROM ztfs0308 AS a LEFT OUTER JOIN ztfs0404 AS b ON a~akont = b~gacnt
+       WHERE a~custm = zsfs0404-patnr .
+    ELSEIF gs_bschl-gtype = 'K' .
+      SELECT SINGLE a~akont AS gacnt
+                    b~bdscp AS bdscp
+        INTO CORRESPONDING FIELDS OF zsfs0404
+       FROM ztfs0307 AS a LEFT OUTER JOIN ztfs0404 AS b ON a~akont = b~gacnt
+       WHERE a~vendr = zsfs0404-patnr .
+    ENDIF.
+  ENDIF.
+
+  " ##
+  p_step_sub = p_step_sub + 1 .
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form SET_F4_0201
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM set_f4_0201 .
+  IF zsfs0404-bschl IS INITIAL .
+*    message e016(zmsg_fs) .
+    RETURN .
+  ENDIF.
+
+  " ### ### ####
+  DATA : ls_bschl LIKE LINE OF gt_bschl .
+  CLEAR : gs_bschl .
+  READ TABLE gt_bschl INTO gs_bschl WITH KEY bschl = zsfs0404-bschl .
+
+  IF sy-subrc IS NOT INITIAL .
+*    message e017(zmsg_fs) .
+    RETURN .
+  ENDIF.
+
+  " ## d ## ## k ## #### ####
+
+  " ##### -> bp ####
+  " #### -> bp ####
+  " ##### g/l ## ####
+
+  CASE gs_bschl-gtype .
+    WHEN 'D' . " ##
+      PERFORM set_custom_f4_customer .
+    WHEN 'K' . " ##
+      PERFORM set_custom_f4_vendor .
+    WHEN 'S' . " ##
+      PERFORM set_custom_f4_gl .
+    WHEN OTHERS.
+  ENDCASE.
+ENDFORM.
+**&---------------------------------------------------------------------*
+**& Form SET_CUSTOM_F4
+**&---------------------------------------------------------------------*
+**& text
+**&---------------------------------------------------------------------*
+*FORM set_custom_f4_customer .
+*
+*  DATA : lt_return TYPE TABLE OF ddshretval .
+*
+*  DATA : BEGIN OF ls_customer ,
+*           custm TYPE ztfs0308-custm,
+*           cname TYPE ztfs0308_t-cname,
+*         END OF ls_customer ,
+*         lt_customer LIKE TABLE OF ls_customer.
+*
+*  DATA : BEGIN OF ls_gacnt ,
+*           gacnt TYPE ztfs0404-gacnt,
+*           bdscp TYPE ztfs0404-bdscp,
+*         END OF ls_gacnt ,
+*         lt_gacnt LIKE TABLE OF ls_gacnt.
+*
+*  " ### ####
+*  IF gv_step_sub = 1.
+*    SELECT gacnt
+*         bdscp
+*    FROM ztfs0404
+*    INTO CORRESPONDING FIELDS OF TABLE lt_gacnt
+*   WHERE mitkz = 'D' .
+*
+*    CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+*      EXPORTING
+**       DDIC_STRUCTURE         = ' '
+*        retfield    = 'GACNT'
+**       PVALKEY     = ' '
+*        dynpprog    = sy-repid
+*        dynpnr      = sy-dynnr
+*        dynprofield = 'ZSFS0404-GACNT'
+**       STEPL       = 0
+**       WINDOW_TITLE           =
+**       VALUE       = ' '
+*        value_org   = 'S'
+**       MULTIPLE_CHOICE        = ' '
+**       DISPLAY     = ' '
+**       CALLBACK_PROGRAM       = ' '
+**       CALLBACK_FORM          = ' '
+**       CALLBACK_METHOD        =
+**       MARK_TAB    =
+**   IMPORTING
+**       USER_RESET  =
+*      TABLES
+*        value_tab   = lt_gacnt
+**       FIELD_TAB   =
+*        return_tab  = lt_return
+**       DYNPFLD_MAPPING        =
+**   EXCEPTIONS
+**       PARAMETER_ERROR        = 1
+**       NO_VALUES_FOUND        = 2
+**       OTHERS      = 3
+*      .
+*    IF sy-subrc <> 0.
+** Implement suitable error handling here
+*    ENDIF.
+*
+*  ENDIF.
+*
+*  IF gv_step_sub = 0 .
+*    " ### ####
+*    SELECT custm
+*           cname
+*      FROM ztfs0308_t
+*      INTO CORRESPONDING FIELDS OF TABLE lt_customer
+*     WHERE langu = sy-langu .
+*
+*    CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+*      EXPORTING
+**       DDIC_STRUCTURE         = ' '
+*        retfield    = 'CUSTM'
+**       PVALKEY     = ' '
+*        dynpprog    = sy-repid
+*        dynpnr      = sy-dynnr
+*        dynprofield = 'ZSFS0404-GACNT'
+**       STEPL       = 0
+**       WINDOW_TITLE           =
+**       VALUE       = ' '
+*        value_org   = 'S'
+**       MULTIPLE_CHOICE        = ' '
+**       DISPLAY     = ' '
+**       CALLBACK_PROGRAM       = ' '
+**       CALLBACK_FORM          = ' '
+**       CALLBACK_METHOD        =
+**       MARK_TAB    =
+**   IMPORTING
+**       USER_RESET  =
+*      TABLES
+*        value_tab   = lt_customer
+**       FIELD_TAB   =
+*        return_tab  = lt_return
+**       DYNPFLD_MAPPING        =
+**   EXCEPTIONS
+**       PARAMETER_ERROR        = 1
+**       NO_VALUES_FOUND        = 2
+**       OTHERS      = 3
+*      .
+*    IF sy-subrc <> 0.
+** Implement suitable error handling here
+*    ENDIF.
+*
+*  ENDIF.
+*
+*
+*ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  SET_CUSTOM_F4_CUSTOMER
+*&---------------------------------------------------------------------*
+FORM set_custom_f4_customer.
+
+  DATA : lt_customer TYPE TABLE OF ty_customer,
+         lt_gacnt    TYPE TABLE OF ty_gacnt.
+
+  IF gv_step_sub = 1.
+
+    SELECT gacnt bdscp
+      FROM ztfs0404
+      INTO CORRESPONDING FIELDS OF TABLE lt_gacnt
+     WHERE mitkz = 'D'.
+
+    PERFORM f4_function USING 'GACNT'          'BDSCP'
+                           'ZSFS0404-GACNT' 'ZSFS0404-BDSCP'
+                           lt_gacnt.
+
+  ELSEIF gv_step_sub = 0.
+
+    SELECT custm cname
+      FROM ztfs0308_t
+      INTO CORRESPONDING FIELDS OF TABLE lt_customer
+     WHERE langu = sy-langu.
+
+*    PERFORM f4_function USING 'CUSTM'          'CNAME'
+*                           'ZSFS0404-PATNR' 'ZSFS0404-PNAME'
+*                           lt_customer.
+    PERFORM f4_function USING 'CUSTM'          'CNAME'
+                               'ZSFS0404-GACNT' 'ZSFS0404-BDSCP'
+                               lt_customer.
+
+  ENDIF.
+ENDFORM .
+
+**&---------------------------------------------------------------------*
+**& Form SET_CUSTOM_F4_VENDOR
+**&---------------------------------------------------------------------*
+**& text
+**&---------------------------------------------------------------------*
+**& -->  p1        text
+**& <--  p2        text
+**&---------------------------------------------------------------------*
+*FORM set_custom_f4_vendor .
+*  DATA : lt_return TYPE TABLE OF ddshretval .
+*
+*  DATA : BEGIN OF ls_vendor ,
+*           vendr TYPE ztfs0307-vendr,
+*           vname TYPE ztfs0307_t-vname,
+*         END OF ls_vendor ,
+*         lt_vendor LIKE TABLE OF ls_vendor.
+*
+*  DATA : BEGIN OF ls_gacnt ,
+*           gacnt TYPE ztfs0404-gacnt,
+*           bdscp TYPE ztfs0404-bdscp,
+*         END OF ls_gacnt ,
+*         lt_gacnt LIKE TABLE OF ls_gacnt.
+*
+*
+*  IF gv_step_sub = 0 .
+*    " ### ####
+*    SELECT vendr
+*           vname
+*      FROM ztfs0307_t
+*      INTO CORRESPONDING FIELDS OF TABLE lt_vendor
+*     WHERE langu = sy-langu .
+*
+*    IF sy-subrc <> 0.
+**    MESSAGE E018(ZMSG_FS) .
+*    ENDIF.
+*
+*    CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+*      EXPORTING
+**       DDIC_STRUCTURE         = ' '
+*        retfield    = 'VENDR'
+**       PVALKEY     = ' '
+*        dynpprog    = sy-repid
+*        dynpnr      = sy-dynnr
+*        dynprofield = 'ZSFS0404-GACNT'
+**       STEPL       = 0
+**       WINDOW_TITLE           =
+**       VALUE       = ' '
+*        value_org   = 'S'
+**       MULTIPLE_CHOICE        = ' '
+**       DISPLAY     = ' '
+**       CALLBACK_PROGRAM       = ' '
+**       CALLBACK_FORM          = ' '
+**       CALLBACK_METHOD        =
+**       MARK_TAB    =
+**   IMPORTING
+**       USER_RESET  =
+*      TABLES
+*        value_tab   = lt_vendor
+**       FIELD_TAB   =
+*        return_tab  = lt_return
+**       DYNPFLD_MAPPING        =
+**   EXCEPTIONS
+**       PARAMETER_ERROR        = 1
+**       NO_VALUES_FOUND        = 2
+**       OTHERS      = 3
+*      .
+*    IF sy-subrc <> 0.
+** Implement suitable error handling here
+*    ENDIF.
+*
+*  ELSEIF gv_step_sub = 1 .
+*
+*    SELECT gacnt
+*         bdscp
+*    FROM ztfs0404
+*    INTO CORRESPONDING FIELDS OF TABLE lt_gacnt
+*   WHERE mitkz = 'K' .
+*
+*    CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+*      EXPORTING
+**       DDIC_STRUCTURE         = ' '
+*        retfield    = 'GACNT'
+**       PVALKEY     = ' '
+*        dynpprog    = sy-repid
+*        dynpnr      = sy-dynnr
+*        dynprofield = 'ZSFS0404-GACNT'
+**       STEPL       = 0
+**       WINDOW_TITLE           =
+**       VALUE       = ' '
+*        value_org   = 'S'
+**       MULTIPLE_CHOICE        = ' '
+**       DISPLAY     = ' '
+**       CALLBACK_PROGRAM       = ' '
+**       CALLBACK_FORM          = ' '
+**       CALLBACK_METHOD        =
+**       MARK_TAB    =
+**   IMPORTING
+**       USER_RESET  =
+*      TABLES
+*        value_tab   = lt_gacnt
+**       FIELD_TAB   =
+*        return_tab  = lt_return
+**       DYNPFLD_MAPPING        =
+**   EXCEPTIONS
+**       PARAMETER_ERROR        = 1
+**       NO_VALUES_FOUND        = 2
+**       OTHERS      = 3
+*      .
+*    IF sy-subrc <> 0.
+** Implement suitable error handling here
+*    ENDIF.
+*
+*  ENDIF.
+*ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  SET_CUSTOM_F4_VENDOR
+*&---------------------------------------------------------------------*
+FORM set_custom_f4_vendor.
+
+  DATA : lt_vendor TYPE TABLE OF ty_vendor,
+         lt_gacnt  TYPE TABLE OF ty_gacnt.
+
+  IF gv_step_sub = 0.
+
+    SELECT vendr vname
+      FROM ztfs0307_t
+      INTO CORRESPONDING FIELDS OF TABLE lt_vendor
+     WHERE langu = sy-langu.
+
+*    PERFORM f4_function USING 'VENDR'          'VNAME'
+*                           'ZSFS0404-PATNR' 'ZSFS0404-PNAME'
+*                           lt_vendor.
+    PERFORM f4_function USING 'VENDR'          'VNAME'
+                           'ZSFS0404-GACNT' 'ZSFS0404-BDSCP'
+                           lt_vendor.
+
+  ELSEIF gv_step_sub = 1.
+
+    SELECT gacnt bdscp
+      FROM ztfs0404
+      INTO CORRESPONDING FIELDS OF TABLE lt_gacnt
+     WHERE mitkz = 'K'.
+
+    PERFORM f4_function USING 'GACNT'          'BDSCP'
+                           'ZSFS0404-GACNT' 'ZSFS0404-BDSCP'
+                           lt_gacnt.
+
+  ENDIF.
+
+ENDFORM.
+**&---------------------------------------------------------------------*
+**& Form SET_CUSTOM_F4_GL
+**&---------------------------------------------------------------------*
+**& text
+**&---------------------------------------------------------------------*
+**& -->  p1        text
+**& <--  p2        text
+**&---------------------------------------------------------------------*
+*FORM set_custom_f4_gl .
+*  DATA : lt_return TYPE TABLE OF ddshretval .
+*  DATA : lt_mapping TYPE TABLE OF dselc,
+*         ls_mapping TYPE dselc.
+*  DATA : lt_field   TYPE dfies_tab.
+*
+*  DATA : BEGIN OF ls_gacnt ,
+*           gacnt TYPE ztfs0404-gacnt,
+*           bdscp TYPE ztfs0404-bdscp,
+*         END OF ls_gacnt ,
+*         lt_gacnt LIKE TABLE OF ls_gacnt.
+*
+*
+*  " ### ####
+*  SELECT gacnt
+*         bdscp
+*    FROM ztfs0404
+*    INTO CORRESPONDING FIELDS OF TABLE lt_gacnt
+*   WHERE mitkz <> 'D'
+*     AND mitkz <> 'K' .
+*
+*  " GACNT # ## GACNT ### ##
+**  ls_mapping-fldname   = 'GACNT'.
+**  ls_mapping-dyfldname = 'ZSFS0404-GACNT'.
+**  APPEND ls_mapping TO lt_mapping.
+*
+*  " BDSCP # ## BDSCP ### ##  # ##!
+*  ls_mapping-fldname   = 'BDSCP'.
+*  ls_mapping-dyfldname = 'ZSFS0404-BDSCP'.
+*  APPEND ls_mapping TO lt_mapping.
+*
+*  IF sy-subrc <> 0.
+**    MESSAGE E018(ZMSG_FS) .
+*  ENDIF.
+*
+*  CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+*    EXPORTING
+**     DDIC_STRUCTURE  = ' '
+*      retfield        = 'GACNT'
+**     PVALKEY         = ' '
+*      dynpprog        = sy-repid
+*      dynpnr          = sy-dynnr
+*      dynprofield     = 'ZSFS0404-GACNT'
+**     STEPL           = 0
+**     WINDOW_TITLE    =
+**     VALUE           = ' '
+*      value_org       = 'S'
+**     MULTIPLE_CHOICE = ' '
+**     DISPLAY         = ' '
+**     CALLBACK_PROGRAM       = ' '
+**     CALLBACK_FORM   = ' '
+**     CALLBACK_METHOD =
+**     MARK_TAB        =
+**   IMPORTING
+**     USER_RESET      =
+*    TABLES
+*      value_tab       = lt_gacnt
+**     FIELD_TAB       =
+*      return_tab      = lt_return
+*      dynpfld_mapping = lt_mapping
+**   EXCEPTIONS
+**     PARAMETER_ERROR = 1
+**     NO_VALUES_FOUND = 2
+**     OTHERS          = 3
+*    .
+*  IF sy-subrc <> 0.
+** Implement suitable error handling here
+*  ENDIF.
+*ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  SET_CUSTOM_F4_GL
+*&---------------------------------------------------------------------*
+FORM set_custom_f4_gl.
+  DATA : BEGIN OF ls_gacnt ,
+           gacnt TYPE ztfs0404-gacnt,
+           bdscp TYPE ztfs0404-bdscp,
+         END OF ls_gacnt ,
+         lt_gacnt LIKE TABLE OF ls_gacnt.
+
+  SELECT gacnt bdscp
+    FROM ztfs0404
+    INTO CORRESPONDING FIELDS OF TABLE lt_gacnt
+   WHERE mitkz <> 'D'
+     AND mitkz <> 'K'.
+
+*  PERFORM f4_function USING 'ZSFS0404-GACNT'   " ## GACNT ##
+*                             'ZSFS0404-BDSCP'   " ## BDSCP ##
+*                             lt_gacnt.
+  PERFORM f4_function USING 'GACNT'          'BDSCP'
+                           'ZSFS0404-GACNT' 'ZSFS0404-BDSCP'
+                           lt_gacnt.
+
+ENDFORM.
+
+*&---------------------------------------------------------------------*
+*&      Form  F4_FUNCTION
+*&---------------------------------------------------------------------*
+FORM f4_function USING VALUE(p_field1)  TYPE any
+                       VALUE(p_field2)  TYPE any
+                       VALUE(p_dynpro1) TYPE any
+                       VALUE(p_dynpro2) TYPE any
+                             pt_value   TYPE STANDARD TABLE.
+
+  DATA : BEGIN OF ls_val,
+           col1 TYPE char40,   " # ## ##
+         END OF ls_val,
+         lt_val LIKE TABLE OF ls_val.
+
+  DATA : lt_field   TYPE TABLE OF dfies.
+  DATA : lt_mapping TYPE TABLE OF dselc.
+
+  FIELD-SYMBOLS : <fs_line> TYPE any,
+                  <fs_val>  TYPE any.
+
+  " LT_VAL ## - #### ### ##
+  LOOP AT pt_value ASSIGNING <fs_line>.
+    DO.
+      ASSIGN COMPONENT sy-index OF STRUCTURE <fs_line> TO <fs_val>.
+      IF sy-subrc = 0.
+        ls_val-col1 = <fs_val>.
+        APPEND ls_val TO lt_val.
+        CLEAR ls_val.
+      ELSE.
+        EXIT.
+      ENDIF.
+    ENDDO.
+  ENDLOOP.
+
+  " LT_FIELD
+  APPEND VALUE dfies( fieldname = p_field1  " ### ##
+                      outputlen = 10
+                      leng      = 40
+                      intlen    = 40
+                      reptext   = '##' ) TO lt_field.
+
+  APPEND VALUE dfies( fieldname = p_field2          " ### ##
+                      outputlen = 30
+                      leng      = 30
+                      intlen    = 30
+                      reptext   = '##' ) TO lt_field.
+
+
+  " LT_MAPPING
+  lt_mapping = VALUE #(
+    ( fldname = p_field1 dyfldname = p_dynpro1 )
+    ( fldname = p_field2 dyfldname = p_dynpro2       )
+  ).
+
+  CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+    EXPORTING
+      retfield        = p_field1
+      dynpprog        = sy-repid
+      dynpnr          = sy-dynnr
+      dynprofield     = p_dynpro1
+      window_title    = 'F4 ##'
+      value_org       = 'C'
+    TABLES
+      value_tab       = LT_VAL
+      field_tab       = lt_field
+      dynpfld_mapping = lt_mapping
+    EXCEPTIONS
+      parameter_error = 1
+      no_values_found = 2
+      OTHERS          = 3.
+
+  IF sy-subrc <> 0.
+  ENDIF.
+
+ENDFORM.
+
+
+*&---------------------------------------------------------------------*
+*& Form ENTER_SUBSCREEN
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM enter_subscreen  CHANGING p_subrc TYPE sy-subrc .
+  " input check (# ######)
+  " alv# ##
+  " zsfs0404## zsfs0405# ##
+
+  PERFORM input_check_0201 CHANGING p_subrc .
+
+  " ##
+  PERFORM 0404_to_0405 CHANGING p_subrc .
+
+  " ALV #### ##
+  PERFORM add_alv_item CHANGING p_subrc .
+
+  " SEQNO 1 ##
+  IF gv_item IS INITIAL .
+    gv_seqno = gv_seqno + 1.
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form INPUT_CHECK_0201
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM input_check_0201  CHANGING p_subrc TYPE sy-subrc .
+  IF zsfs0404-bschl IS INITIAL OR
+     zsfs0404-gacnt IS INITIAL OR
+     zsfs0404-bdscp IS INITIAL OR
+     zsfs0404-dmbtr IS INITIAL OR
+     zsfs0404-waers IS INITIAL .
+    p_subrc = 4 .
+    MESSAGE e022(zmsg_fs) .
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form 0404_TO_0405
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM 0404_to_0405  CHANGING p_subrc TYPE sy-subrc .
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  " zsfs0404## zsfs0405#
+  CLEAR : zsfs0405 .
+  MOVE-CORRESPONDING zsfs0404 TO zsfs0405 .
+
+  IF gs_bschl-shkzg = 'S' . " ##
+    zsfs0405-dmbtr_d = zsfs0404-dmbtr .
+  ELSEIF gs_bschl-shkzg = 'H' . " ##
+    zsfs0405-dmbtr_c = zsfs0404-dmbtr .
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form ADD_ALV_ITEM
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM add_alv_item  CHANGING p_subrc TYPE sy-subrc .
+  " ALV #### ##
+
+  CLEAR : gs_line , gs_line_alv .
+  MOVE-CORRESPONDING zsfs0404 TO gs_line .
+  MOVE-CORRESPONDING zsfs0405 TO gs_line_alv .
+
+
+  IF gv_item IS INITIAL .
+    APPEND gs_line TO gt_line .
+    APPEND gs_line_alv TO gt_line_alv .
+  ELSE .
+    MODIFY gt_line FROM gs_line INDEX gs_line-seqno .
+    MODIFY gt_line_alv FROM gs_line_alv INDEX gs_line-seqno.
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form CHECK_S_H
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM check_s_h  CHANGING p_subrc TYPE sy-subrc .
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  DATA : lv_s TYPE i,
+         lv_h TYPE i.
+
+  CLEAR : gs_line_alv .
+  LOOP AT gt_line_alv INTO gs_line_alv .
+    lv_s = lv_s + gs_line_alv-dmbtr_d .
+    lv_h = lv_h + gs_line_alv-dmbtr_c .
+
+    CLEAR : gs_line_alv .
+  ENDLOOP.
+
+  IF lv_s <> lv_h .
+    MESSAGE e019(zmsg_fs) .
+    p_subrc = 4 .
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form SET_SCREEN_0201_ITMED
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM set_screen_0201_itmed  CHANGING p_subrc TYPE sy-subrc .
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  " ### #### ####.
+  DATA : lv_index TYPE i .
+
+  PERFORM get_selected_row_no USING go_alv_0200
+                              CHANGING lv_index p_subrc .
+
+  PERFORM delete_alv USING lv_index gt_line
+                   CHANGING p_subrc .
+
+  IF p_subrc IS INITIAL .
+    MESSAGE s021(zmsg_fs) WITH lv_index .
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form READ_ALV
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM delete_alv  USING    VALUE(p_index)
+                        VALUE(pt_line) TYPE STANDARD TABLE
+               CHANGING p_subrc TYPE sy-subrc .
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  " ##
+  DELETE gt_line INDEX p_index .
+  IF sy-subrc IS NOT INITIAL .
+    MESSAGE e020(zmsg_fs) .
+  ENDIF.
+
+  DELETE gt_line_alv INDEX p_index .
+
+  IF sy-subrc IS NOT INITIAL .
+    MESSAGE e020(zmsg_fs) .
+  ENDIF.
+
+  " seqno ##
+*  clear : gs_line .
+*  LOOP AT gt_line into gs_line .
+*    gs_line-seqno = sy-tabix .
+*
+*    MODIFY gt_line FROM gs_line INDEX sy-tabix.
+*    clear : gs_line .
+*  ENDLOOP.
+  LOOP AT gt_line ASSIGNING FIELD-SYMBOL(<fs_line>).
+    <fs_line>-seqno = sy-tabix.   " ## ## (MODIFY ###)
+  ENDLOOP.
+
+  LOOP AT gt_line_alv ASSIGNING FIELD-SYMBOL(<fs_line_alv>).
+    <fs_line_alv>-seqno = sy-tabix.   " ## ## (MODIFY ###)
+  ENDLOOP.
+
+  gv_seqno = gv_seqno - 1.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form SET_SCREEN_0201_ITMEM
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      <-- GV_SUBRC
+*&---------------------------------------------------------------------*
+FORM set_screen_0201_itmem  CHANGING p_subrc TYPE sy-subrc .
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  " ### #### ####.
+  DATA : lv_index TYPE i .
+
+  PERFORM get_selected_row_no USING go_alv_0200
+                              CHANGING lv_index p_subrc .
+
+  PERFORM read_alv USING lv_index gt_line
+                   CHANGING p_subrc .
+
+  " ### ### #### ## GV_TMP (### #### ###)
+
+  CLEAR : gs_bschl .
+  READ TABLE gt_bschl INTO gs_bschl WITH KEY bschl = zsfs0404-bschl .
+
+  IF gs_bschl-gtype = 'D' OR gs_bschl-gtype = 'K'.
+    gv_tmp = 'X' .
+  ENDIF.
+
+  gv_item = 'X' .
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form READ_ALV
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM read_alv  USING    VALUE(p_index)
+                        VALUE(pt_line) LIKE gt_line
+               CHANGING p_subrc TYPE sy-subrc .
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  DATA : ls_line LIKE LINE OF pt_line .
+
+  READ TABLE pt_line INTO ls_line INDEX p_index .
+
+  " ZSFS0404# ##
+  CLEAR : zsfs0404 .
+  MOVE-CORRESPONDING ls_line TO zsfs0404 .
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form SET_LAYO_0202
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      <-- GS_LAYO_0202
+*&---------------------------------------------------------------------*
+FORM set_layo_0202  CHANGING ps_layo TYPE lvc_s_layo .
+  CLEAR : ps_layo .
+
+  ps_layo-zebra = 'X'.
+  ps_layo-cwidth_opt = 'X' .
+  ps_layo-sel_mode = 'A' .
+*  ps_layo-edit = 'X'.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form SET_SORT_0202
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      <-- GT_SORT_0202
+*&---------------------------------------------------------------------*
+FORM set_sort_0202  CHANGING pt_sort TYPE lvc_t_sort .
+  DATA : ls_sort LIKE LINE OF pt_sort .
+
+  " ####
+  CLEAR : ls_sort , pt_sort .
+  ls_sort-fieldname = 'BELNR'.
+  ls_sort-spos = 1.
+  ls_sort-up = 'X' .
+  APPEND ls_sort TO pt_sort .
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form SET_FCAT_0202
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      <-- GT_FCAT_0202
+*&---------------------------------------------------------------------*
+FORM set_fcat_0202  CHANGING pt_fcat TYPE lvc_t_fcat .
+  CALL FUNCTION 'LVC_FIELDCATALOG_MERGE'
+    EXPORTING
+      i_structure_name       = 'ZSFS0407'    " # DDIC ###
+    CHANGING
+      ct_fieldcat            = pt_fcat
+    EXCEPTIONS
+      inconsistent_interface = 1
+      program_error          = 2
+      OTHERS                 = 3.
+
+  IF sy-subrc <> 0.
+    MESSAGE e000(00) WITH 'FCAT ## ##'.
+  ENDIF.
+
+  " DMBTR ### EDIT ##
+  FIELD-SYMBOLS : <fs_fcat> TYPE lvc_s_fcat.
+
+  READ TABLE pt_fcat ASSIGNING <fs_fcat>
+    WITH KEY fieldname = 'DMBTR_'.
+
+  IF sy-subrc = 0.
+    <fs_fcat>-edit = 'X'.   " # EDIT ##
+    <fs_fcat>-outputlen = 20.
+    <fs_fcat>-ref_field = ''.    " # DDIC ## ##
+    <fs_fcat>-ref_table = ''.    " # DDIC ## ##
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form DISPLAY_ALV_0202
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      --> GO_ALV_0202
+*&      --> GS_LAYO_0202
+*&      --> GT_SORT_0202
+*&      --> GT_FCAT_0202
+*&      --> P_
+*&      <-- GT_DATA
+*&---------------------------------------------------------------------*
+FORM display_alv_0202  USING    VALUE(po_alv) TYPE REF TO cl_gui_alv_grid
+                                VALUE(ps_layo) TYPE lvc_s_layo
+                                VALUE(pt_sort) TYPE lvc_t_sort
+                                VALUE(pt_fcat) TYPE lvc_t_fcat
+                                VALUE(p_sname)
+                       CHANGING pt_data LIKE gt_pay .
+  CALL METHOD po_alv->set_table_for_first_display
+    EXPORTING
+      i_structure_name              = p_sname
+      is_layout                     = ps_layo
+    CHANGING
+      it_outtab                     = pt_data
+      it_fieldcatalog               = pt_fcat
+      it_sort                       = pt_sort
+    EXCEPTIONS
+      invalid_parameter_combination = 1
+      program_error                 = 2
+      too_many_lines                = 3
+      OTHERS                        = 4.
+  IF sy-subrc <> 0.
+*   Implement suitable error handling here
+  ENDIF.
+
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form GET_DOCU_KZ
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM get_docu_kz  CHANGING p_subrc TYPE sy-subrc .
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  CLEAR : gv_bp , gt_pay .
+  CALL SCREEN 202 STARTING AT 10 10 .
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form GET_DOCU_DZ
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM get_docu_dz  CHANGING p_subrc TYPE sy-subrc .
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  CLEAR : gv_bp , gt_pay.
+  CALL SCREEN 202 STARTING AT 10 10 .
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form GET_OPEN_ITEM
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM get_open_item  CHANGING p_subrc TYPE sy-subrc .
+  " ## BP # ### ## ### #####.
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  " BP##
+  CASE zsfs0403-btype .
+    WHEN 'KZ' . " ## (##)
+      IF zsfs0406-vendr IS INITIAL .
+        p_subrc = 2 .
+        MESSAGE e023(zmsg_fs) .
+        RETURN .
+      ENDIF.
+    WHEN 'DZ' . " ## (##)
+      IF zsfs0406-custm IS INITIAL .
+        p_subrc = 2 .
+        MESSAGE e023(zmsg_fs) .
+        RETURN .
+      ENDIF.
+    WHEN OTHERS.
+  ENDCASE.
+
+  " ### ,
+  CLEAR : gt_pay .
+  CASE zsfs0403-btype .
+    WHEN 'KZ' . " ## (##)
+      PERFORM get_vd_open_item CHANGING p_subrc .
+    WHEN 'DZ' . " ## (##)
+      PERFORM get_ct_open_item CHANGING p_subrc .
+    WHEN OTHERS.
+  ENDCASE.
+
+  IF p_subrc IS INITIAL .
+    gv_bp = 'X' .
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form GET_VD_OPEN_ITEM
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      <-- P_SUBRC
+*&---------------------------------------------------------------------*
+FORM get_vd_open_item  CHANGING p_subrc TYPE sy-subrc .
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  SELECT a~belnr
+         a~fyear
+         seqno
+         budat
+         gacnt
+         dmbtr
+         waers
+    FROM ztfs0402 AS a INNER JOIN ztfs0401 AS b ON a~belnr = b~belnr
+    INTO CORRESPONDING FIELDS OF TABLE gt_pay
+   WHERE augbl = ''
+     AND bschl = '31'
+     AND patnr = zsfs0406-vendr .
+
+  IF sy-subrc IS NOT INITIAL .
+    p_subrc = 4 .
+    MESSAGE e024(zmsg_fs) .
+    RETURN .
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form GET_CT_OPEN_ITEM
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      <-- P_SUBRC
+*&---------------------------------------------------------------------*
+FORM get_ct_open_item  CHANGING p_subrc TYPE sy-subrc .
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  SELECT a~belnr
+         a~fyear
+         seqno
+         budat
+         gacnt
+         dmbtr
+         waers
+    FROM ztfs0402 AS a INNER JOIN ztfs0401 AS b ON a~belnr = b~belnr
+    INTO CORRESPONDING FIELDS OF TABLE gt_pay
+   WHERE augbl = ''
+     AND bschl = '01'
+     AND patnr = zsfs0406-custm .
+
+  IF sy-subrc IS NOT INITIAL .
+    p_subrc = 4 .
+    MESSAGE e024(zmsg_fs) .
+    RETURN .
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form ENTER_OPEN_ITEM
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      <-- GV_SUBRC
+*&---------------------------------------------------------------------*
+FORM enter_open_item  CHANGING p_subrc TYPE sy-subrc .
+  IF p_subrc IS NOT INITIAL .
+    RETURN .
+  ENDIF.
+
+  DATA : lv_total TYPE i .
+  DATA : ls_line LIKE gs_line .
+  DATA : lv_seqno TYPE i .
+  DATA : lv_price TYPE i,
+         lv_waers TYPE ztfs0402-waers.
+
+  " ALV## ###### ####
+  " ### ###.
+  CLEAR : gs_pay , gt_line , gs_clearing , gt_clearing .
+  LOOP AT gt_pay INTO gs_pay .
+    IF gs_pay-dmbtr_ IS NOT INITIAL .
+      IF gs_pay-dmbtr_ >= gs_pay-dmbtr .
+        MESSAGE s025(zmsg_fs) .
+        EXIT .
+      ENDIF.
+
+      lv_seqno = lv_seqno + 1 .
+      lv_total = lv_total + gs_pay-dmbtr_ .
+      lv_price = gs_pay-dmbtr - gs_pay-dmbtr_ .
+
+      " ### ##### ##
+      " #### ### ## , ### ####
+
+      CASE zsfs0403-btype .
+        WHEN 'KZ' . " ## (##)
+          SELECT SINGLE VNAME
+            FROM ZTFS0307_T
+            INTO zsfs0406-vname
+           WHERE VENDR = ZSFS0406-vendr
+             AND langu = SY-langu .
+
+          " 21(##) 50(##) 31
+          " ## ##
+          PERFORM create_line USING sy-datum(4) lv_seqno '21' gs_pay-gacnt gs_pay-dmbtr gs_pay-waers zsfs0406-vendr zsfs0406-vname
+                              CHANGING ls_line .
+          IF gs_pay-dmbtr <> gs_pay-dmbtr_ .
+            lv_seqno = lv_seqno + 1 .
+            PERFORM create_line USING sy-datum(4) lv_seqno '31' gs_pay-gacnt lv_price gs_pay-waers zsfs0406-vendr zsfs0406-vname
+                                CHANGING ls_line .
+          ENDIF.
+        WHEN 'DZ' . " ## (##)
+          SELECT SINGLE CNAME
+            FROM ZTFS0308_T
+            INTO zsfs0406-Cname
+           WHERE CUSTM = ZSFS0406-custm
+             AND langu = SY-langu .
+          " 11(##)(##) 40(##)01
+          PERFORM create_line USING sy-datum(4) lv_seqno '11' gs_pay-gacnt gs_pay-dmbtr gs_pay-waers zsfs0406-CUSTM zsfs0406-Cname
+                              CHANGING ls_line .
+          IF gs_pay-dmbtr <> gs_pay-dmbtr_ .
+            lv_seqno = lv_seqno + 1 .
+            PERFORM create_line USING sy-datum(4) lv_seqno '011' gs_pay-gacnt lv_price gs_pay-waers zsfs0406-custm zsfs0406-Cname
+                                CHANGING ls_line .
+          ENDIF.
+        WHEN OTHERS.
+      ENDCASE.
+
+      " ## ## ##
+      gs_clearing-belnr = gs_pay-belnr .
+      gs_clearing-seqno = gs_pay-seqno .
+      APPEND gs_clearing TO gt_clearing .
+
+    ENDIF.
+
+    lv_waers = gs_pay-waers .
+    CLEAR : gs_pay , ls_line , gs_clearing , lv_price .
+  ENDLOOP.
+
+  lv_seqno = lv_seqno + 1 .
+
+  " ### ####
+  CASE zsfs0403-btype .
+    WHEN 'KZ' . " ## (##)
+      " 21(##) 50(##)
+      PERFORM create_line USING sy-datum(4) lv_seqno '50' '100000' lv_total lv_waers '' ''
+                          CHANGING ls_line .
+    WHEN 'DZ' . " ## (##)
+      " 11(##)(##) 40(##)
+      PERFORM create_line USING sy-datum(4) lv_seqno '40' '100000' lv_total lv_waers '' ''
+                          CHANGING ls_line .
+    WHEN OTHERS.
+  ENDCASE.
+
+  " G/L### 1#
+  " #### ####
+  " alv line## ##
+  PERFORM line_to_alv USING gt_line
+                      CHANGING gt_line_alv p_subrc .
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form CREATE_LINE
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM create_line  USING    VALUE(p_fyear)
+                           VALUE(p_seqno)
+                           VALUE(p_bschl)
+                           VALUE(p_gacnt)
+                           VALUE(p_dmbtr)
+                           VALUE(p_waers)
+                           VALUE(p_partn)
+                           VALUE(p_pname)
+                  CHANGING ps_line LIKE gs_line .
+
+  ps_line-fyear = p_fyear .
+  ps_line-seqno = p_seqno .
+  ps_line-bschl = p_bschl .
+  ps_line-gacnt = p_gacnt .
+  ps_line-dmbtr = p_dmbtr .
+  ps_line-waers = p_waers .
+  ps_line-patnr = p_partn .
+  ps_line-pname = p_pname .
+
+  APPEND ps_line TO gt_line .
+
+ENDFORM.

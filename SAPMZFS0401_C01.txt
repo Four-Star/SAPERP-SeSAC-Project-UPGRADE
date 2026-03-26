@@ -1,0 +1,72 @@
+*&---------------------------------------------------------------------*
+*& Include          SAPMZFS0401_C01
+*&---------------------------------------------------------------------*
+" CLASS
+CLASS lcl_handler IMPLEMENTATION .
+  METHOD on_double_click .
+*    PERFORM double_click USING e_row
+*                               e_column
+*                               es_row_no .
+  ENDMETHOD .
+
+  METHOD on_hotspot_click .
+*    PERFORM hotspot_click USING e_row_id
+*                                e_column_id
+*                                es_row_no .
+  ENDMETHOD .
+
+  METHOD on_toolbar .
+*    PERFORM toolbar USING e_object
+*                          e_interactive .
+  ENDMETHOD .
+
+  METHOD on_user_command .
+*    PERFORM user_command USING e_ucomm .
+  ENDMETHOD .
+
+  METHOD on_data_changed .
+    DATA : ls_modi TYPE lvc_s_modi .
+
+    LOOP AT er_data_changed->mt_mod_cells INTO ls_modi .
+      CASE ls_modi-fieldname .
+        WHEN 'DMBTR_' .
+          IF ls_modi-value < 0 .
+            CALL METHOD er_data_changed->add_protocol_entry
+              EXPORTING
+                i_fieldname = ls_modi-fieldname    " # ##
+                i_row_id    = ls_modi-row_id       " # ##
+                i_msgid     = '00'
+                i_msgno     = '001'
+                i_msgty     = 'E'
+                i_msgv1     = '### 0 ##### ###'.
+          ENDIF.
+        WHEN OTHERS.
+      ENDCASE.
+    ENDLOOP.
+
+  ENDMETHOD .
+
+  METHOD on_data_changed_finished .
+    DATA : ls_modi  TYPE lvc_s_modi.
+    FIELD-SYMBOLS : <fs_line> TYPE any,
+                    <fs_val>  TYPE any.
+
+    LOOP AT ET_GOOD_CELLS INTO ls_modi.
+
+      " ### # ##
+      READ TABLE gt_pay ASSIGNING <fs_line>
+        INDEX ls_modi-row_id.
+
+      IF sy-subrc = 0.
+        " ### ### # ##
+        ASSIGN COMPONENT ls_modi-fieldname
+          OF STRUCTURE <fs_line> TO <fs_val>.
+
+        IF sy-subrc = 0.
+          <fs_val> = ls_modi-value.
+        ENDIF.
+      ENDIF.
+
+    ENDLOOP.
+  ENDMETHOD .
+ENDCLASS .

@@ -1,0 +1,240 @@
+*&---------------------------------------------------------------------*
+*& Include          SAPMZFS0401_O01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*& Module STATUS_0100 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE status_0100 OUTPUT.
+  SET PF-STATUS 'S100'.
+  SET TITLEBAR 'T100'.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module STATUS_0200 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE status_0200 OUTPUT.
+  SET PF-STATUS 'S200'.
+  SET TITLEBAR 'T200'.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module STATUS_0300 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE status_0300 OUTPUT.
+  SET PF-STATUS 'S300'.
+  SET TITLEBAR 'T300'.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module SET_ALV_0100 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE set_alv_0100 OUTPUT.
+  IF go_con_0100 IS INITIAL .
+    PERFORM create_object USING 'CON1'
+                          CHANGING go_con_0100 go_alv_0100 .
+    PERFORM set_layo_0100 CHANGING gs_layo_0100 .
+    PERFORM set_sort_0100 CHANGING gt_sort_0100 .
+    PERFORM set_fcat_0100 CHANGING gt_fcat_0100 .
+  ENDIF.
+
+  PERFORM set_handler USING go_alv_0100
+                      CHANGING go_handler .
+  PERFORM display_alv_0100 USING go_alv_0100 gs_layo_0100 gt_sort_0100 gt_fcat_0100 'ZSFS0402'
+                           CHANGING gt_data .
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module SET_ALV_0200 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE set_alv_0200 OUTPUT.
+  IF gv_step = 0 .
+    PERFORM clear_object CHANGING go_con_0200 go_alv_0200 .
+
+  ELSEIF gv_step = 1 .
+    IF go_con_0200 IS INITIAL .
+      PERFORM create_object USING 'CON2'
+                          CHANGING go_con_0200 go_alv_0200 .
+      PERFORM set_layo_0200 CHANGING gs_layo_0200 .
+      PERFORM set_sort_0200 CHANGING gt_sort_0200 .
+      PERFORM set_fcat_0200 CHANGING gt_fcat_0200 .
+    ENDIF.
+
+    PERFORM set_handler USING go_alv_0200
+                      CHANGING go_handler .
+    PERFORM display_alv_0200 USING go_alv_0200 gs_layo_0200 gt_sort_0200 gt_fcat_0200 'ZSFS0405'
+                             CHANGING gt_line_alv .
+  ENDIF.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module SET_ALV_0300 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE set_alv_0300 OUTPUT.
+  IF go_con_0200 IS INITIAL .
+    PERFORM create_object USING 'CON2'
+                          CHANGING go_con_0200 go_alv_0200 .
+    PERFORM set_layo_0200 CHANGING gs_layo_0200 .
+    PERFORM set_sort_0200 CHANGING gt_sort_0200 .
+    PERFORM set_fcat_0200 CHANGING gt_fcat_0200 .
+
+  ENDIF.
+
+  PERFORM set_handler USING go_alv_0200
+                      CHANGING go_handler .
+  PERFORM display_alv_0200 USING go_alv_0200 gs_layo_0200 gt_sort_0200 gt_fcat_0200 'ZSFS0405'
+                           CHANGING gt_line_alv .
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module MODIFY_SCREEN_0200 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE modify_screen_0200 OUTPUT.
+  LOOP AT SCREEN .
+    IF gv_step = 0 .
+      " ### ####
+      IF screen-group1 = 'HD' .
+        screen-input = '1' .
+      ELSEIF screen-group1 = 'LN' OR screen-name = 'CON2' .
+        screen-active = '0' .
+*        screen-invisible = 1.
+      ENDIF.
+    ELSEIF gv_step = 1 .
+      " #### ####
+      IF screen-group1 = 'HD' .
+        screen-input = '0' .
+      ELSEIF screen-group1 = 'LN' OR screen-name = 'CON2' .
+        screen-active = '1' .
+*        screen-invisible = 0.
+      ENDIF.
+
+      IF screen-group3 = 'IT' .
+        IF zsfs0403-btype = 'KZ' or zsfs0403-btype = 'DZ' .
+          SCREEN-ACTIVE = 0 .
+        ENDIF.
+      ENDIF.
+    ENDIF.
+
+    MODIFY SCREEN .
+  ENDLOOP.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module STATUS_0201 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE status_0201 OUTPUT.
+  SET PF-STATUS 'S201'.
+  SET TITLEBAR 'T201'.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module MODIFY_SCREEN_0201 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE modify_screen_0201 OUTPUT.
+  LOOP AT SCREEN .
+    IF gv_step_sub = 0 .
+      " ###
+      IF screen-group1 = 'ST1' .
+        " ### ## # ##
+        screen-active = 1 .
+      ELSEIF screen-group1 = 'ST2' .
+        " ## ## ###
+        screen-active = 0 .
+      ENDIF.
+    ELSEIF gv_step_sub = 1 .
+      " ###
+      IF screen-group1 = 'ST1' .
+        screen-active = 1.
+        IF screen-group2 = 'BSC' .
+          screen-input = 0 .
+        ENDIF.
+      ELSEIF screen-group1 = 'ST2' .
+        " ## #### ### PARTNER ### ## ## ### ## ##
+        " ### ##
+        screen-active = 1.
+        IF gv_tmp <> 'X' AND screen-group2 = 'BP' .  " BP# #### ##
+          screen-active = 0 .
+        ELSEIF gv_tmp = 'X' AND screen-group2 = 'BP' . " BP# ###
+          screen-input = 0 .
+        ENDIF.
+
+      ENDIF.
+
+    ENDIF.
+
+    MODIFY SCREEN .
+  ENDLOOP.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module STATUS_0202 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE status_0202 OUTPUT.
+  SET PF-STATUS 'S202'.
+  SET TITLEBAR 'T202'.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module SET_ALV_0202 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE set_alv_0202 OUTPUT.
+  " ### ### #### ####
+
+  IF gv_bp IS NOT INITIAL .
+    IF go_con_0202 IS INITIAL .
+      PERFORM create_object USING 'CON3'
+                            CHANGING go_con_0202 go_alv_0202 .
+      PERFORM set_layo_0202 CHANGING gs_layo_0202 .
+      PERFORM set_sort_0202 CHANGING gt_sort_0202 .
+      PERFORM set_fcat_0202 CHANGING gt_fcat_0202 .
+    ENDIF.
+
+    PERFORM set_handler USING go_alv_0202
+                        CHANGING go_handler .
+
+    PERFORM display_alv_0202 USING go_alv_0202 gs_layo_0202 gt_sort_0202 gt_fcat_0202 'ZSFS0407'
+                             CHANGING gt_PAY .
+
+  else .
+    PERFORM clear_object CHANGING go_con_0202 go_alv_0202 .
+  ENDIF.
+
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module MODIFY_SCREEN_0202 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE modify_screen_0202 OUTPUT.
+  LOOP AT SCREEN .
+    CASE zsfs0403-btype .
+      WHEN 'KZ' . " ##
+        IF SCREEN-group1 = 'VD' .
+          SCREEN-ACTIVE = 1 .
+        ELSEIF SCREEN-group1 = 'CT' .
+          SCREEN-ACTIVE = 0 .
+        ENDIF.
+      WHEN 'DZ' . " ##
+        IF SCREEN-group1 = 'VD' .
+          SCREEN-ACTIVE = 0 .
+        ELSEIF SCREEN-group1 = 'CT' .
+          SCREEN-ACTIVE = 1 .
+        ENDIF.
+      WHEN OTHERS.
+    ENDCASE.
+
+    MODIFY SCREEN .
+  ENDLOOP.
+
+ENDMODULE.

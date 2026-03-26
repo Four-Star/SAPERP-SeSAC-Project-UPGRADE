@@ -1,0 +1,157 @@
+*&---------------------------------------------------------------------*
+*& Include SAPMZFS0401_TOP                          - Module Pool      SAPMZFS0401
+*&---------------------------------------------------------------------*
+PROGRAM sapmzfs0401.
+
+" ####
+
+DATA : ok_code  TYPE sy-ucomm,
+       gv_subrc TYPE sy-subrc,
+       gv_dynnr TYPE sy-dynnr.
+
+** SCREEN 100 condition
+" ## ##, ###, ###, ####, ######
+TABLES : zsfs0401.
+DATA : gs_condition TYPE zsfs0401.
+
+** SCREEN 100 ALV DATA
+" ####, ###, ###, ####, ## ####
+TABLES : zsfs0402.
+DATA : gs_data TYPE zsfs0402,
+       gt_data LIKE TABLE OF gs_data.
+
+** SCREEN 200 300 HEADER
+TABLES : zsfs0403.
+DATA : gs_header TYPE zsfs0403,
+       gt_header LIKE TABLE OF gs_header.
+
+** SCREEN 200 300 LINE
+TABLES : zsfs0404, zsfs0405 .
+DATA : gs_line     TYPE zsfs0404,
+       gt_line     LIKE TABLE OF gs_line,
+       gs_line_alv TYPE zsfs0405,
+       gt_line_alv LIKE TABLE OF gs_line_alv.
+
+" ##, ## ##
+TABLES : zsfs0406 .
+DATA : gs_pay TYPE zsfs0407,
+       gt_pay LIKE TABLE OF gs_pay.
+
+" ### ### ###
+DATA : gs_bschl TYPE ztfs0403,
+       gt_bschl LIKE TABLE OF gs_bschl.
+
+DATA : BEGIN OF gs_clearing ,
+         belnr TYPE ztfs0402-belnr,
+         seqno TYPE ztfs0402-seqno,
+       END OF gs_clearing .
+DATA : gt_clearing LIKE TABLE OF gs_clearing .
+
+" SCREEN 200 ## ##
+DATA : gv_step TYPE i .
+DATA : gv_step_sub TYPE i .
+DATA : gv_tmp TYPE c .
+DATA : gv_item TYPE c .
+
+** ALV variables
+DATA : go_con_0100 TYPE REF TO cl_gui_custom_container,
+       go_alv_0100 TYPE REF TO cl_gui_alv_grid.
+
+DATA : gs_layo_0100 TYPE  lvc_s_layo .
+
+DATA : gs_sort_0100 TYPE lvc_s_sort,
+       gt_sort_0100 TYPE lvc_t_sort.
+
+DATA : gs_fcat_0100 TYPE lvc_s_fcat,
+       gt_fcat_0100 TYPE lvc_t_fcat.
+
+DATA : go_con_0200 TYPE REF TO cl_gui_custom_container,
+       go_alv_0200 TYPE REF TO cl_gui_alv_grid.
+
+DATA : gs_layo_0200 TYPE lvc_s_layo .
+
+DATA : gs_sort_0200 TYPE lvc_s_sort,
+       gt_sort_0200 TYPE lvc_t_sort.
+
+DATA : gs_fcat_0200 TYPE lvc_s_fcat,
+       gt_fcat_0200 TYPE lvc_t_fcat.
+
+DATA : go_con_0202 TYPE REF TO cl_gui_custom_container,
+       go_alv_0202 TYPE REF TO cl_gui_alv_grid.
+
+DATA : gs_layo_0202 TYPE lvc_s_layo .
+
+DATA : gs_sort_0202 TYPE lvc_s_sort,
+       gt_sort_0202 TYPE lvc_t_sort.
+
+DATA : gs_fcat_0202 TYPE lvc_s_fcat,
+       gt_fcat_0202 TYPE lvc_t_fcat.
+
+** ### ####
+DATA : gs_domain TYPE dd07v,
+       gt_domain LIKE TABLE OF gs_domain.
+
+DATA : gv_seqno TYPE i .
+
+DATA : gv_bp TYPE c .
+
+" ##### ###
+DATA : gs_gacnt TYPE ztfs0404,
+       gt_gacnt LIKE TABLE OF gs_gacnt.
+
+TYPES : BEGIN OF ty_gacnt,
+          gacnt TYPE ztfs0404-gacnt,
+          bdscp TYPE ztfs0404-bdscp,
+        END OF ty_gacnt.
+TYPES : ty_t_gacnt TYPE TABLE OF ty_gacnt.
+
+TYPES : BEGIN OF ty_vendor,
+          vendr TYPE ztfs0307-vendr,
+          vname TYPE ztfs0307_t-vname,
+        END OF ty_vendor.
+
+TYPES : BEGIN OF ty_customer,
+          custm TYPE ztfs0308-custm,
+          cname TYPE ztfs0308_t-cname,
+        END OF ty_customer.
+
+** Range Table
+" ####
+DATA : gr_belnr TYPE rsdsselopt_t,
+       gs_belnr LIKE LINE OF gr_belnr.
+" ###
+DATA : gr_budat TYPE rsdsselopt_t,
+       gs_budat LIKE LINE OF gr_budat.
+" ###
+DATA : gr_bldat TYPE rsdsselopt_t,
+       gs_bldat LIKE LINE OF gr_bldat.
+" ####
+DATA : gr_btype TYPE rsdsselopt_t,
+       gs_btype LIKE LINE OF gr_btype.
+" ####
+DATA : gr_donum TYPE rsdsselopt_t,
+       gs_donum LIKE LINE OF gr_donum.
+
+** Class
+CLASS lcl_handler DEFINITION .
+  PUBLIC SECTION .
+    METHODS :
+      on_double_click FOR EVENT double_click OF cl_gui_alv_grid
+        IMPORTING e_row e_column es_row_no ,
+      on_hotspot_click FOR EVENT hotspot_click OF cl_gui_alv_grid
+        IMPORTING e_row_id e_column_id es_row_no ,
+      on_toolbar FOR EVENT toolbar OF cl_gui_alv_grid
+        IMPORTING e_object e_interactive ,
+      on_user_command FOR EVENT user_command OF cl_gui_alv_grid
+        IMPORTING e_ucomm ,
+      on_data_changed FOR EVENT data_changed OF cl_gui_alv_grid
+        IMPORTING er_data_changed
+                  e_onf4
+                  e_onf4_before
+                  e_onf4_after
+                  e_ucomm ,
+      on_data_changed_finished FOR EVENT data_changed_finished OF cl_gui_alv_grid
+        IMPORTING e_modified
+                  et_good_cells .
+ENDCLASS .
+DATA : go_handler TYPE REF TO lcl_handler .

@@ -1,0 +1,212 @@
+*&---------------------------------------------------------------------*
+*& Include          SAPMZFS0401_I01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Module  EXIT  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE exit INPUT.
+  CASE ok_code .
+    WHEN 'EXIT'.
+      PERFORM clear_object CHANGING go_con_0200 go_alv_0200 .
+      LEAVE PROGRAM .
+    WHEN 'CANC'.
+      PERFORM clear_object CHANGING go_con_0200 go_alv_0200 .
+      LEAVE TO SCREEN 0 .
+    WHEN 'CLOSE'.
+      LEAVE TO SCREEN 0 .
+    WHEN OTHERS.
+  ENDCASE.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0100  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0100 INPUT.
+  CLEAR : gv_subrc .
+  CASE ok_code .
+    WHEN 'BACK' .
+      LEAVE TO SCREEN 0 .
+    WHEN 'ENTER' .
+      " ## ##
+    WHEN 'LOOK' .
+      " 1. INPUT CHECK
+      " 2. ## ## ##### ### ## ### ####
+
+      " 1.
+      PERFORM input_check_0100 CHANGING gv_subrc .
+
+      " 2.
+      PERFORM get_alv_data_0100 USING zsfs0401-belnr
+                                      zsfs0401-blbdt zsfs0401-bledt
+                                      zsfs0401-bubdt zsfs0401-buedt
+                                      zsfs0401-btype
+                                      zsfs0401-donum
+                                CHANGING gt_data .
+      .
+
+      " ## ##
+      IF gv_subrc IS INITIAL . RETURN . ENDIF .
+
+      CASE gv_subrc .
+        WHEN 2 .
+          MESSAGE i001(zmsg_fs).
+        WHEN OTHERS.
+          MESSAGE e002(zmsg_fs).
+      ENDCASE.
+    WHEN 'CRTE' .
+      " ## ##
+      " MOVE SCREEN 200
+      " 1. INPUT CHECK ####
+      " 2. 200 ## ###
+
+      " 2.
+      PERFORM clear_screen_200 CHANGING gv_subrc .
+
+      IF gv_subrc IS INITIAL .
+        CALL SCREEN 200 .
+      ELSE .
+        MESSAGE e008(zmsg_fs) .
+      ENDIF.
+
+    WHEN 'DETA' .
+      " ## ## ##
+      " MOVE SCREEN 300
+      " 1. 300 ## ###
+
+      " ### # ##
+      DATA : lv_index TYPE i .
+      PERFORM get_selected_row_no USING go_alv_0100
+                                  CHANGING lv_index gv_subrc .
+
+      PERFORM clear_screen_300 CHANGING gv_subrc .
+
+      PERFORM GET_HEADER_DATA CHANGING GV_SUBRC .
+
+      " ### ### ####
+      perform get_row_data using lv_index
+                           CHANGING gt_data gs_header gt_line gt_line_alv gv_subrc .
+
+      IF gv_subrc IS INITIAL .
+        CALL SCREEN 300 .
+      ELSE .
+        MESSAGE e007(zmsg_fs) .
+      ENDIF.
+
+    WHEN OTHERS.
+  ENDCASE.
+
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0200  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0200 INPUT.
+  CLEAR : gv_subrc .
+  CASE ok_code .
+    WHEN 'BACK' .
+      LEAVE TO SCREEN 0 .
+    WHEN 'ENTER' .
+      " ### #### ####
+      PERFORM STEP_BY_STEP CHANGING GV_STEP GV_SUBRC .
+    WHEN 'CRTE' .
+      " ## ##
+
+      " INPUT CHECK
+      PERFORM INPUT_CHECK_0200 CHANGING GV_SUBRC .
+
+      PERFORM CREATE_ACCOUNT CHANGING GV_SUBRC .
+
+      IF GV_SUBRC IS INITIAL .
+        " ### ###
+        PERFORM INIT_SCREEN_0100 .
+
+        LEAVE TO SCREEN 0 .
+      ELSE .
+        MESSAGE E011(ZMSG_FS) .
+      ENDIF.
+    WHEN 'INIT' .
+      " ###
+      PERFORM INIT_CLEAR CHANGING GV_SUBRC .
+
+    WHEN 'ITEMC' .
+      " ### ##
+      PERFORM CLEAR_SCREEN_0201 CHANGING GV_SUBRC .
+
+      IF GV_SUBRC IS INITIAL .
+        CALL SCREEN 201 STARTING AT 10 10 .
+      ENDIF.
+    WHEN 'ITEMD' .
+      " ### ##
+      " ## #### ##
+      PERFORM SET_SCREEN_0201_ITMED CHANGING GV_SUBRC .
+    WHEN 'ITEMM' .
+      " ### ##
+      " SELECT ROW
+      PERFORM SET_SCREEN_0201_ITMEM CHANGING GV_SUBRC .
+
+      IF GV_SUBRC IS INITIAL .
+        CALL SCREEN 201 STARTING AT 10 10 .
+      ENDIF.
+    WHEN OTHERS.
+  ENDCASE.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0300  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0300 INPUT.
+  CLEAR : gv_subrc .
+  CASE ok_code .
+    WHEN 'BACK' .
+      LEAVE TO SCREEN 0 .
+    WHEN 'ENTER' .
+    WHEN OTHERS.
+  ENDCASE.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0201  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0201 INPUT.
+  CLEAR : gv_subrc .
+  CASE ok_code .
+    WHEN 'ENTER' .
+      PERFORM ENTER_SUBSCREEN CHANGING GV_SUBRC .
+
+      IF GV_SUBRC IS INITIAL .
+        LEAVE TO SCREEN 0 .
+      ENDIF.
+    WHEN 'ITEMC' .
+      " #### ## ##
+      PERFORM SET_STEP1_SUBSCREEN CHANGING gv_step_sub GV_SUBRC .
+    WHEN OTHERS.
+  ENDCASE.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0202  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0202 INPUT.
+  CLEAR : gv_subrc .
+  CASE ok_code .
+    WHEN 'ENTER' .
+      PERFORM ENTER_OPEN_ITEM CHANGING GV_SUBRC .
+
+      IF GV_SUBRC IS INITIAL .
+        LEAVE TO SCREEN 0 .
+      ENDIF.
+
+    WHEN 'SEARCH' .
+      " BP #### ## ### # ,
+      PERFORM GET_OPEN_ITEM CHANGING GV_SUBRC .
+    WHEN OTHERS.
+
+  ENDCASE.
+ENDMODULE.
